@@ -6,7 +6,7 @@ import MainHeader from '../components/MainHeader/MainHeader';
 const FALLBACK_POSTER = 'https://cataas.com/cat';
 
 
-function Title() {
+function TitleDetails() {
   const { id } = useParams();
   const [title, setTitle] = useState(null);
   const [error, setError] = useState("");
@@ -46,12 +46,8 @@ function Title() {
   );
 
   const poster = title.poster || title.posterUrl || FALLBACK_POSTER;
-  const release = title.releaseDate || title.date || title.startYear || title.year || '';
-  const runtime = title.runtimeMinutes ?? title.runtime ?? null;
-  const avg = title.rating ?? title.averageRating ?? title.averagerating ?? null;
-  const votes = title.numberOfVotes ?? title.numVotes ?? title.numvotes ?? null;
-  const genres = (title.genre && typeof title.genre === 'string') ? title.genre.split(',').map(s=>s.trim()).filter(Boolean) : (title.genres || []);
-  const plot = title.plot || title.overview || title.description || '';
+  const release = title.releaseDate || title.startYear || title.year || '';
+  const runtime = title.runtimeMinutes || title.runtime || null;
 
   return (
     <>
@@ -68,8 +64,8 @@ function Title() {
               </div>
 
               <div style={{marginTop:12}}>
-                <div style={{fontWeight:700, fontSize:18}}>{typeof avg === 'number' ? avg.toFixed(1) : '—'}</div>
-                <div className="meta-small">{votes != null ? `${votes.toLocaleString()} votes` : 'No votes'}</div>
+                <div style={{fontWeight:700, fontSize:18}}>{title.averageRating != null ? title.averageRating.toFixed(1) : '—'}</div>
+                <div className="meta-small">{title.numVotes != null ? `${title.numVotes.toLocaleString()} votes` : 'No votes'}</div>
               </div>
             </div>
           </aside>
@@ -79,42 +75,35 @@ function Title() {
               <h3 style={{marginTop:0}}>{title.title} <small className="meta-small">{release}</small></h3>
             </div>
 
-            {genres && genres.length > 0 && (
+            {title.genres && title.genres.length > 0 && (
               <div className="badges-wrap">
-                {genres.map((g) => (
+                {title.genres.map((g) => (
                   <div key={g} className="badge">{g}</div>
                 ))}
               </div>
             )}
 
-            {title.directors && title.directors.length > 0 && (
-              <div style={{marginTop:8}} className="meta-small"><strong>Directors:</strong> {title.directors.join(', ')}</div>
-            )}
-            {title.writers && title.writers.length > 0 && (
-              <div style={{marginTop:4}} className="meta-small"><strong>Writers:</strong> {title.writers.join(', ')}</div>
-            )}
-
             <section className="overview">
               <h4>Overview</h4>
-              <p>{plot || 'No description available.'}</p>
+              <p>{title.description || 'No description available.'}</p>
             </section>
 
             <section className="details">
-              <div><strong>Type:</strong> {title.type || '—'}</div>
-              <div><strong>Runtime:</strong> {runtime ? `${runtime} min` : '—'}</div>
-              <div><strong>Adult:</strong> {title.isAdult ? 'Yes' : 'No'}</div>
+              <div><strong>Country:</strong> {title.country || title.countries?.join(', ') || '—'}</div>
+              <div><strong>Language:</strong> {title.language || title.languages?.join(', ') || '—'}</div>
+              <div><strong>Budget:</strong> {title.budget || '—'}</div>
             </section>
 
             <section style={{marginTop:18}}>
               <h4>Cast</h4>
-              { (title.actors && title.actors.length > 0) || (title.cast && title.cast.length > 0) ? (
+              {title.cast && title.cast.length > 0 ? (
                 <ul className="cast-list">
-                  {(title.actors || title.cast).map((c) => (
-                    <li key={(c.personId || c.id || c.personID || c.name || Math.random()) + (c.role || '')} className="cast-item">
+                  {title.cast.map((c) => (
+                    <li key={(c.personId || c.id) + (c.role || '')} className="cast-item">
                       {c.personId ? (
-                        <Link to={`/actor/${c.personId}`} style={{color:'#fff', textDecoration:'none'}}>{c.name || `${c.firstname || ''} ${c.lastname || ''}`.trim()}</Link>
+                        <Link to={`/actor/${c.personId}`} style={{color:'#fff', textDecoration:'none'}}>{c.name}</Link>
                       ) : (
-                        <span>{c.name || `${c.firstname || ''} ${c.lastname || ''}`.trim() || c.title || 'Unknown'}</span>
+                        <span>{c.name}</span>
                       )}
                       {c.role && <span style={{color:'rgba(255,255,255,0.75)'}}> — {c.role}</span>}
                       {c.characters && <div style={{color:'rgba(255,255,255,0.75)'}}>as {c.characters}</div>}
@@ -132,4 +121,4 @@ function Title() {
   );
 }
 
-export default Title;
+export default TitleDetails;
