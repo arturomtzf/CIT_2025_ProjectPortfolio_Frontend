@@ -55,111 +55,122 @@ function TitleDetails() {
     <>
       <MainHeader />
       <div className="title-container">
-        <div className="title-grid">
-          <aside className="poster-card">
-            <img src={poster} alt={title.title} className="poster-img" onError={(e)=>{e.currentTarget.src = FALLBACK_POSTER}} />
-            <div className="poster-body">
-              <h2 className="title-row">{title.title}</h2>
+        <div className="title-container">
+          <div className="title-grid">
+            {/* Left: Poster with rating/votes below */}
+            <aside className="poster-card">
+              <img src={poster} alt={title.title} className="poster-img" onError={(e)=>{e.currentTarget.src = FALLBACK_POSTER}} />
+              <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', padding:'10px'}}>
+                <span className="badge">{title.rating != null ? `${title.rating.toFixed(1)} ★` : '—'}</span>
+                <span className="badge">{title.numberOfVotes != null ? `${title.numberOfVotes.toLocaleString()} votes` : 'No votes'}</span>
+              </div>
+            </aside>
 
-              <div style={{marginTop:12}}>
-                <div className="meta-small"><strong>Release:</strong> {release}</div>
-                {runtime && <div className="meta-small"><strong>Runtime:</strong> {runtime} min</div>}
-                {title.type && <div className="meta-small"><strong>Type:</strong> {title.type}</div>}
+            {/* Right: Content */}
+            <main className="title-main">
+                {/* Big title */}
+                <h1 style={{marginTop:0, marginBottom:8}}>{title.title}</h1>
+            
+              {/* Meta row */}
+              <div className="details" style={{marginTop:0}}>
+                {release && <div>{release}</div>}
+                {runtime && <div>{runtime} min</div>}
+                {title.type && <div>{title.type}</div>}
               </div>
 
-              <div style={{marginTop:12}}>
-                <div style={{fontWeight:700, fontSize:18}}>{title.rating != null ? title.rating.toFixed(1) : '—'}</div>
-                <div className="meta-small">{title.numberOfVotes != null ? `${title.numberOfVotes.toLocaleString()} votes` : 'No votes'}</div>
-              </div>
-            </div>
-          </aside>
+              {/* Genres as badges */}
+              {genres && genres.length > 0 && (
+                <div className="badges-wrap" style={{marginTop:12}}>
+                  {genres.map((g) => (
+                    <div key={g} className="badge">{g}</div>
+                  ))}
+                </div>
+              )}
 
-          <main className="title-main">
-            <div style={{display:'flex', justifyContent:'space-between', alignItems:'flex-start'}}>
-              <h3 style={{marginTop:0}}>{title.title} <small className="meta-small">{release}</small></h3>
-            </div>
+              {/* Overview */}
+              <section className="overview" style={{marginTop:12}}>
+                <p>{plot || 'No description available.'}</p>
+              </section>
 
-            {genres && genres.length > 0 && (
-              <div className="badges-wrap">
-                {genres.map((g) => (
-                  <div key={g} className="badge">{g}</div>
-                ))}
-              </div>
-            )}
-
-            {title.directors && title.directors.length > 0 && (
-              <div style={{marginTop:8}} className="meta-small">
-                <strong>Directors:</strong>{' '}
-                {title.directors.map((d, i) => {
-                  const name = d.name || `${d.firstname || ''} ${d.lastname || ''}`.trim();
-                  return d.personId ? (
-                    <span key={d.personId}>
-                      <Link to={`/actor/${d.personId}`} style={{color:'#fff', textDecoration:'none'}}>{name}</Link>
-                      {i < title.directors.length - 1 ? ', ' : ''}
-                    </span>
-                  ) : (
-                    <span key={name + i}>{name}{i < title.directors.length - 1 ? ', ' : ''}</span>
-                  );
-                })}
-              </div>
-            )}
-            {title.writers && title.writers.length > 0 && (
-              <div style={{marginTop:4}} className="meta-small">
-                <strong>Writers:</strong>{' '}
-                {title.writers.map((w, i) => {
-                  const name = w.name || `${w.firstname || ''} ${w.lastname || ''}`.trim();
-                  return w.personId ? (
-                    <span key={w.personId}>
-                      <Link to={`/actor/${w.personId}`} style={{color:'#fff', textDecoration:'none'}}>{name}</Link>
-                      {i < title.writers.length - 1 ? ', ' : ''}
-                    </span>
-                  ) : (
-                    <span key={name + i}>{name}{i < title.writers.length - 1 ? ', ' : ''}</span>
-                  );
-                })}
-              </div>
-            )}
-
-            <section className="overview">
-              <h4>Overview</h4>
-              <p>{plot || 'No description available.'}</p>
-            </section>
-
-            <section className="details">
-              <div><strong>Type:</strong> {title.type || '—'}</div>
-              <div><strong>Runtime:</strong> {runtime ? `${runtime} min` : '—'}</div>
-              <div><strong>Adult:</strong> {title.isAdult ? 'Yes' : 'No'}</div>
-            </section>
-
-            <section style={{marginTop:18}}>
-              <h4>Cast</h4>
-              {title.actors && title.actors.length > 0 ? (
-                <ul className="cast-list">
-                  {title.actors.map((actor, idx) => {
-                    const isString = typeof actor === 'string';
-                    const actorName = isString ? actor : (actor.name || `${actor.firstname || ''} ${actor.lastname || ''}`.trim());
-                    const actorId = isString ? null : actor.personId;
-                    
+              {/* People rows like IMDb */}
+              {title.directors && title.directors.length > 0 && (
+                <div style={{marginTop:16}}>
+                  <span className="meta-small" style={{marginRight:8}}>Director</span>
+                  {title.directors.map((d, i) => {
+                    const name = d.name || `${d.firstname || ''} ${d.lastname || ''}`.trim();
+                    const content = d.personId ? (
+                      <Link key={d.personId} to={`/actor/${d.personId}`} style={{color:'#fff', textDecoration:'none'}}>{name}</Link>
+                    ) : (
+                      <span key={name + i}>{name}</span>
+                    );
                     return (
-                      <li key={actorId || idx} className="cast-item">
-                        {actorId ? (
-                          <Link to={`/actor/${actorId}`} style={{color:'#fff', textDecoration:'none'}}>
-                            {actorName}
-                          </Link>
-                        ) : (
-                          <span>{actorName}</span>
-                        )}
-                      </li>
+                      <span key={(d.personId || name) + '_dir'}>
+                        {content}{i < title.directors.length - 1 ? ', ' : ''}
+                      </span>
                     );
                   })}
-                </ul>
-              ) : (
-                <p>No cast information.</p>
+                </div>
               )}
-            </section>
-          </main>
+
+              {title.writers && title.writers.length > 0 && (
+                <div style={{marginTop:8}}>
+                  <span className="meta-small" style={{marginRight:8}}>Writer</span>
+                  {title.writers.map((w, i) => {
+                    const name = w.name || `${w.firstname || ''} ${w.lastname || ''}`.trim();
+                    const content = w.personId ? (
+                      <Link key={w.personId} to={`/actor/${w.personId}`} style={{color:'#fff', textDecoration:'none'}}>{name}</Link>
+                    ) : (
+                      <span key={name + i}>{name}</span>
+                    );
+                    return (
+                      <span key={(w.personId || name) + '_wri'}>
+                        {content}{i < title.writers.length - 1 ? ', ' : ''}
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
+            </main>
+          </div>
         </div>
       </div>
+
+      <div className="title-container">
+        {/* Cast grid as cards */}
+        <section style={{marginTop:18}}>
+          <h4>Stars</h4>
+          {title.actors && title.actors.length > 0 ? (
+            <div className="items-grid">
+              {title.actors.map((actor, idx) => {
+                const isString = typeof actor === 'string';
+                const actorName = isString ? actor : (actor.name || `${actor.firstname || ''} ${actor.lastname || ''}`.trim());
+                const actorId = isString ? null : actor.personId;
+                const imgSrc = (actor && actor.photo) ? actor.photo : FALLBACK_POSTER;
+                const card = (
+                  <div className="item-card">
+                    <img src={imgSrc} className="item-img" alt={actorName} onError={(e)=>{e.currentTarget.src = FALLBACK_POSTER}} />
+                    <div className="item-body">
+                      <h6 className="item-title">{actorName}</h6>
+                    </div>
+                  </div>
+                );
+                return actorId ? (
+                  <Link key={actorId} to={`/actor/${actorId}`} className="text-decoration-none">
+                    {card}
+                  </Link>
+                ) : (
+                  <div key={idx}>
+                    {card}
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p>No cast information.</p>
+          )}
+        </section>
+      </div>
+       
     </>
   );
 }
