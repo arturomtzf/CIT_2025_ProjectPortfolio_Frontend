@@ -52,14 +52,16 @@ function ActorDetails() {
     <>
       <MainHeader />
       <div className="list-container">
-        <h2 style={{marginTop:0}}>{fullName || actor.name || actor.personId}</h2>
-
         <div className="actor-hero">
           <img src={photo} alt={fullName || actor.name} className="actor-photo" onError={(e)=>{e.currentTarget.src = FALLBACK_POSTER}} />
 
           <div className="actor-bio">
+            <h2 style={{marginTop:0}}>{fullName || actor.name || actor.personId}</h2>
             {actor.birthdate && <div className="meta-small">Born: {actor.birthdate}</div>}
             {actor.deathdate && <div className="meta-small">Died: {actor.deathdate}</div>}
+            {actor.averagerating && <div className="meta-small">Rating: {actor.averagerating}</div>}
+            {actor.numvotes && <div className="meta-small">Votes: {actor.numvotes}</div>}
+
             <section style={{marginTop:12}}>
               <h4>Biography</h4>
               <p>{actor.biography || actor.bio || 'No biography available.'}</p>
