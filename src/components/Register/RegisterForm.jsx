@@ -74,49 +74,61 @@ export default function RegisterForm() {
          <div className="mb-3">
             <input
                 type="text"
+                required
+                className="form-control rounded-3 shadow-sm py-3"
                 placeholder="Last Name"
                 value={formData.lastName}
                 onChange={(e) => 
                     setFormData({...formData, lastName: e.target.value})
                 }
+                disabled = {isRegistering}
             />
          </div>   
           
          <div className="mb-3">
             <input
                 type="email"
+                required
+                className="form-control rounded-3 shadow-sm py-3"
                 placeholder="Email"
                 value={formData.email}
                 onChange={(e) => 
                     setFormData({...formData, email: e.target.value})
                 }
+                disabled = {isRegistering}
             />
          </div>
           
          <div className="mb-3">
              <input
                 type="text"
+                required
+                className="form-control rounded-3 shadow-sm py-3"
                 placeholder="Username"
                 value={formData.username}
                 onChange={(e) => 
                     setFormData({...formData, username: e.target.value})
                 }
+                disabled = {isRegistering}
             />
          </div>
          
          <div className="mb-3">
             <input
                 type="password"
+                required
+                className="form-control rounded-3 shadow-sm py-3"
                 placeholder="Password"
                 value={formData.password}
                 onChange={(e) => 
                     setFormData({...formData, password: e.target.value})
                 }
+                disabled = {isRegistering}
             />
          </div>
            
 
-            <button type="submit" disabled={isRegistering}>
+            <button type="submit" className="btn btn-warning w-100 d-flex justify-content-center align-items-center py-3 fw-bold rounded-3 shadow-sm transition-opacity" disabled={isRegistering}>
                 {isRegistering ? "Creating..." : "Create Account"}
             </button>
         </form>

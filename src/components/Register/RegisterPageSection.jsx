@@ -1,5 +1,6 @@
 import RegisterForm from "./RegisterForm";
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 export default function RegisterPageSection() {
     const navigate = useNavigate();
@@ -21,17 +22,20 @@ export default function RegisterPageSection() {
                         </h2>
 
                         <RegisterForm />
+                        
+                        
+                         <p className="small text-muted w-100 mb-0" style={{ maxWidth: '380px' }}>
+            Already have an account?
+        </p>
 
-                        <p className="mt-3">
-                            Already have an account?{" "}
-                            <span
-                                role="button"
-                                className="text-primary"
-                                onClick={() => navigate("/login")}
-                            >
-                                Sign in
-                            </span>
-                        </p>
+        <Link
+            to={"/signin"}
+            className="btn btn-outline-secondary w-100 py-3 fw-bold rounded-3 shadow-sm"
+            style={{ maxWidth: '380px', color: '#000', borderColor: '#ccc', backgroundColor: '#f8f9fa' }}
+        >
+            Sign in
+        </Link>
+                       
                     </div>
 
                 </div>
@@ -39,3 +43,4 @@ export default function RegisterPageSection() {
         </div>
     );
 }
+
