@@ -20,7 +20,6 @@ const router = createBrowserRouter([
   { path: '/actor/:id', element: <ActorDetails /> },
   { path: '/signin', element: <Login /> },
   { path: '/signout', element: <Signout /> },
-  { path: '/about', element: <NotFound /> }, // Need to do a quick about page
   { path: '*', element: <NotFound /> }
 ]);
 

@@ -63,7 +63,7 @@ const MainSlider = () => {
             }
 
             try {
-                const res = await fetch(`${API_URL}/movies/random`);
+                const res = await fetch(`${API_URL}/movies/random?page=1&pageSize=4`);
                 if (!res.ok) throw new Error("Fetch failed");
                 const data = await res.json();
 
