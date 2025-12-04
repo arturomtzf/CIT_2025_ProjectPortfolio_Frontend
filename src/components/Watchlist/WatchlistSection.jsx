@@ -50,21 +50,29 @@ export default function WatchlistSection() {
     if (error) return <p style={{ color: "red" }}>{error}</p>;
 
 
-
-    
     return (
         <div className="container my-4">
-            {/* Watchlist Header */}
-            <p className="text-muted small">{watchlist.length} titles</p>
+            <div className="col-12 col-lg-8">
+                <p className="text">{watchlist.length} titles</p>
 
-            {/* Watchlist Items */}
             <div className="d-flex flex-column mt-4" style={{ gap: "1.5rem" }}>
                 {watchlist.map(item => {
-                    // Use fallback values if property names differ
-                    const title = item.titlename || item.titleid || "No Title";
-                    const poster = item.poster || item.PosterURL || "https://via.placeholder.com/100x150";
-                    const year = item.year || item.Year || "Unknown Year";
-                    const episodes = item.episodes || item.Episodes || null;
+                    const title = item.titlename || "No Title";
+
+                    const poster = item.poster || null;
+                     
+                    const titleType = item.titleTypeName
+                    ? item.titleTypeName
+                    .replace(/([A-Z])/g, ' $1')   
+                    .replace(/^./, c => c.toUpperCase()) 
+                     : "";
+
+                    const year = item.releaseDate
+                    ? new Date(item.releaseDate).getFullYear()
+                     : "Unknown Year";
+
+                    const episodes = item.numEpisodes || null;
+                    
                     const plot = item.plot || item.Plot || "No description available";
 
                     return (
@@ -73,21 +81,28 @@ export default function WatchlistSection() {
                             className="d-flex bg-white shadow-sm p-3 rounded-3"
                             style={{ gap: "1rem" }}
                         >
-                            {/* Poster */}
                             <img
                                 src={poster}
                                 alt={title}
-                                style={{ width: "100px", height: "150px", objectFit: "cover", borderRadius: "8px" }}
+                                onError={(e) => {
+                                    e.target.onerror = null;
+                                    e.target.src = "https://www.popcorn.app/assets/app/images/placeholder-movieimage.png";
+                                }}
+                                style={{
+                                    width: "100px",
+                                    height: "150px",
+                                    objectFit: "cover",
+                                    borderRadius: "8px"
+                                }}
                             />
 
-                            {/* Movie Info */}
-                            <div className="d-flex flex-column">
-                                <h4 className="m-0 fw-bold">{title}</h4>
-                                <p className="text-muted m-0">{year}</p>
 
-                                {episodes && (
-                                    <p className="text-muted small m-0">{episodes} episodes</p>
-                                )}
+                            <div className="d-flex flex-column">
+                                <p className="text-muted m-0">
+                                {year}  
+                                {titleType && ` -  ${titleType}`}
+                                {episodes && ` -  ${episodes} episodes`} 
+                             </p>
 
                                 <p className="mt-2">{plot}</p>
                             </div>
@@ -95,6 +110,8 @@ export default function WatchlistSection() {
                     );
                 })}
             </div>
+            </div>
+            
         </div>
     );
 }
