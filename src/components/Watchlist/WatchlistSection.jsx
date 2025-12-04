@@ -72,7 +72,7 @@ export default function WatchlistSection() {
                      : "Unknown Year";
 
                     const episodes = item.numEpisodes || null;
-                    
+
                     const plot = item.plot || item.Plot || "No description available";
 
                     return (
@@ -98,6 +98,7 @@ export default function WatchlistSection() {
 
 
                             <div className="d-flex flex-column">
+                                <h4 className="m-0 fw-bold">{title}</h4>
                                 <p className="text-muted m-0">
                                 {year}  
                                 {titleType && ` -  ${titleType}`}
