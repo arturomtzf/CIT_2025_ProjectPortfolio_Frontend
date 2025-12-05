@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import MainHeader from '../components/MainHeader/MainHeader.jsx';
 import Pagination from '../components/Pagination/Pagination.jsx';
+import SimpleFooter from "../components/SimpleFooter/SimpleFooter"
 
 const FALLBACK_POSTER = 'https://cataas.com/cat';
 
@@ -82,6 +83,7 @@ function ActorsList() {
           </>
         )}
       </div>
+      <SimpleFooter />
     </>
   );
 }

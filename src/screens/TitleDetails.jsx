@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import MainHeader from '../components/MainHeader/MainHeader';
+import SimpleFooter from "../components/SimpleFooter/SimpleFooter"
 
 const FALLBACK_POSTER = 'https://cataas.com/cat';
 
@@ -170,7 +171,7 @@ function TitleDetails() {
           )}
         </section>
       </div>
-       
+       <SimpleFooter />
     </>
   );
 }
