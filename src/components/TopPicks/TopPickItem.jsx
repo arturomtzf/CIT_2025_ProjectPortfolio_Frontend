@@ -41,11 +41,20 @@ const TopPickItem = ({ item }) => {
                 </div>
 
                 {/* Title */}
-                <h6 className="text-white fw-bold text-truncate mb-0" title={item.title}>
+                <h6 className="text-white fw-bold text-truncate mb-2" title={item.title}>
                     <Link to={`/title/${item.id}`} className="text-white text-decoration-none hover-underline">
                         {item.title}
                     </Link>
                 </h6>
+
+                <button
+                    className="btn btn-dark w-100 rounded-pill fw-bold d-flex align-items-center justify-content-center py-2 mt-auto text-primary"
+                    style={{ backgroundColor: '#2c2c2c', border: 'none', fontSize: '0.9rem' }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#3c3c3c'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = '#2c2c2c'}
+                >
+                    <i className="bi bi-plus-lg me-2"></i> Watchlist
+                </button>
             </div>
         </div>
     );

@@ -5,7 +5,6 @@ import NavButton from './NavButton';
 import { getToken, isTokenValid, getUserName } from '../../utils/tokenHelper';
 
 const DROPDOWN_OPTIONS = [
-    { "option": "Your Profile", "url": "/profile" },
     { "option": "Your Activity", "url": "/activity" },
     { "option": "Your Watchlist", "url": "/watchlist" },
     { "option": "Ratings", "url": "/ratings" },
