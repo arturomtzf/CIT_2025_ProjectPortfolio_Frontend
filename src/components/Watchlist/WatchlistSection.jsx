@@ -98,14 +98,14 @@ export default function WatchlistSection() {
 
 
                             <div className="d-flex flex-column">
-                                <h4 className="m-0 fw-bold">{title}</h4>
+                                <h4 className="m-0 fw-bold" style={{color: '#000'}}>{title}</h4>
                                 <p className="text-muted m-0">
                                 {year}  
                                 {titleType && ` -  ${titleType}`}
                                 {episodes && ` -  ${episodes} episodes`} 
                              </p>
 
-                                <p className="mt-2">{plot}</p>
+                                <p className="mt-2" style={{color: '#000'}}>{plot}</p>
                             </div>
                         </div>
                     );
