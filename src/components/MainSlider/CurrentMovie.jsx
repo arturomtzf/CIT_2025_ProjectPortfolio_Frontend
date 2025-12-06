@@ -1,6 +1,30 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
-const CurrentMovie = ({ currentMovie, nextItem, prevItem, posterSrc, onImageError }) => {
+const FALLBACK_POSTER = 'https://cataas.com/cat';
+
+const CurrentMovie = ({ currentMovie, nextItem, prevItem }) => {
+    const [errorLevel, setErrorLevel] = useState(0);
+    // 0 = try item.poster
+    // 1 = try poster2
+    // 2 = use fallback
+
+    useEffect(() => {
+        setErrorLevel(0);
+    }, [currentMovie.id]);
+
+    const handleError = () => {
+        setErrorLevel(prev => Math.min(prev + 1, 2));
+    };
+
+    // Decide which image to show
+    const getCurrentSrc = () => {
+        console.log(currentMovie);
+        if (errorLevel === 0 && currentMovie.poster) return currentMovie.poster;
+        if (errorLevel <= 1 && currentMovie.poster2) return currentMovie.poster2;
+        return FALLBACK_POSTER;
+    };
+
     return (
         <div className="col-12 col-lg-8 mb-4 mb-lg-0">
             <div
@@ -11,7 +35,7 @@ const CurrentMovie = ({ currentMovie, nextItem, prevItem, posterSrc, onImageErro
                     style={{
                         position: 'absolute',
                         inset: 0,
-                        backgroundImage: `url(${posterSrc})`,
+                        backgroundImage: `url(${getCurrentSrc()})`,
                         backgroundSize: 'cover',
                         backgroundPosition: 'center',
                         filter: 'blur(20px) brightness(0.4)',
@@ -23,7 +47,7 @@ const CurrentMovie = ({ currentMovie, nextItem, prevItem, posterSrc, onImageErro
                     style={{
                         position: 'absolute',
                         inset: 0,
-                        backgroundImage: `url(${posterSrc})`,
+                        backgroundImage: `url(${getCurrentSrc()})`,
                         backgroundSize: 'contain',
                         backgroundPosition: 'center',
                         backgroundRepeat: 'no-repeat',
@@ -32,8 +56,8 @@ const CurrentMovie = ({ currentMovie, nextItem, prevItem, posterSrc, onImageErro
                 />
 
                 <img
-                    src={posterSrc}
-                    onError={onImageError}
+                    src={getCurrentSrc()}
+                    onError={handleError}
                     style={{ display: 'none' }}
                     alt="hidden-loader"
                 />

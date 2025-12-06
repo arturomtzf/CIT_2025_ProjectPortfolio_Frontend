@@ -35,23 +35,16 @@ const MOCK_TRAILERS = [
 const MainSlider = () => {
     const [randomMovies, setRandomMovies] = useState(MOCK_TRAILERS);
     const [currentIndex, setCurrentIndex] = useState(0);
-    const [errorLevel, setErrorLevel] = useState(0);
-    // 0 = try item.poster
-    // 1 = try poster2
-    // 2 = use fallback
 
     const changeItem = (index) => {
-        setErrorLevel(0);
         setCurrentIndex(index);
     }
 
     const nextItem = () => {
-        setErrorLevel(0);
         setCurrentIndex((prevIndex) => (prevIndex + 1) % randomMovies.length);
     };
 
     const prevItem = () => {
-        setErrorLevel(0);
         setCurrentIndex((prevIndex) =>
             prevIndex === 0 ? randomMovies.length - 1 : prevIndex - 1
         );
@@ -93,19 +86,6 @@ const MainSlider = () => {
         getRandomMovies();
     }, []);
 
-    // Decide which image to show
-    const getCurrentSrc = () => {
-        console.log(currentMovie);
-        if (errorLevel === 0 && currentMovie.poster) return currentMovie.poster;
-        if (errorLevel <= 1 && currentMovie.poster2) return currentMovie.poster2;
-        return FALLBACK_POSTER;
-    };
-
-    const handleError = () => {
-        console.log(errorLevel);
-        setErrorLevel(prev => Math.min(prev + 1, 2));
-    };
-
     const currentMovie = randomMovies[currentIndex];
 
     if (!currentMovie) return <div className="text-white p-5 text-center">Loading Content...</div>;
@@ -121,8 +101,6 @@ const MainSlider = () => {
                     currentMovie={currentMovie}
                     nextItem={nextItem}
                     prevItem={prevItem}
-                    posterSrc={getCurrentSrc()}
-                    onImageError={handleError}
                 />
 
                 <div className="col-12 col-lg-4">
