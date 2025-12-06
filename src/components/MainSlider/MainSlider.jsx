@@ -3,7 +3,6 @@ import CurrentMovie from './CurrentMovie';
 import UpNextItem from './UpNextItem';
 import { getPosterPicture } from '../../utils/picturesHelper';
 
-const FALLBACK_POSTER = 'https://cataas.com/cat';
 const API_URL = import.meta.env.VITE_API_URL;
 const MOCK_TRAILERS = [
     {
@@ -111,8 +110,6 @@ const MainSlider = () => {
                                 <UpNextItem
                                     movie={movie}
                                     isActive={index === currentIndex}
-                                    // onImageError={() => handleImageError(index)}
-                                    FALLBACK_POSTER={FALLBACK_POSTER}
                                 />
                             </div>
                         ))}

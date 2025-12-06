@@ -1,23 +1,11 @@
-import { useState } from 'react';
-
-const FALLBACK_POSTER = 'https://cataas.com/cat';
+import { useMoviePoster } from "../../hooks/useMoviePoster";
 
 const UpNextItem = ({ movie, isActive }) => {
-    const [errorLevel, setErrorLevel] = useState(0);
-    // 0 = try item.poster
-    // 1 = try poster2
-    // 2 = use fallback
-
-    const handleError = () => {
-        setErrorLevel(prev => Math.min(prev + 1, 2));
-    };
-
-    // Decide which image to show
-    const getCurrentSrc = () => {
-        if (errorLevel === 0 && movie.poster) return movie.poster;
-        if (errorLevel <= 1 && movie.poster2) return movie.poster2;
-        return FALLBACK_POSTER;
-    };
+    const { currentSrc, handleError } = useMoviePoster(
+        movie.poster,
+        movie.poster2,
+        movie.id
+    );
 
     return (
         <div
@@ -26,7 +14,7 @@ const UpNextItem = ({ movie, isActive }) => {
         >
             <div style={{ position: 'relative', flexShrink: 0 }}>
                 <img
-                    src={getCurrentSrc()}
+                    src={currentSrc}
                     alt={movie.title}
                     className="rounded"
                     style={{

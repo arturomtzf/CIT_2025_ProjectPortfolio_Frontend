@@ -1,40 +1,26 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getPosterPicture } from '../../utils/picturesHelper';
+import { useMoviePoster } from '../../hooks/useMoviePoster';
 
 const TopPickItem = ({ item }) => {
-    const [poster2, setPoster2] = useState(null);
-    const [errorLevel, setErrorLevel] = useState(0);
-    // 0 = try item.poster
-    // 1 = try poster2
-    // 2 = use fallback
-
-    const FALLBACK_POSTER = 'https://cataas.com/cat';
+    const [fetchedPoster2, setFetchedPoster2] = useState(null);
 
     useEffect(() => {
         const fetchPicture = async () => {
             const second = await getPosterPicture(item.title);
-            setPoster2("https://image.tmdb.org/t/p/w600_and_h900_face/" + second);
+            setFetchedPoster2("https://image.tmdb.org/t/p/w600_and_h900_face/" + second);
         };
         fetchPicture();
     }, [item.title]);
 
-    // Decide which image to show
-    const getCurrentSrc = () => {
-        if (errorLevel === 0 && item.poster) return item.poster;
-        if (errorLevel <= 1 && poster2) return poster2;
-        return FALLBACK_POSTER;
-    };
-
-    const handleError = () => {
-        setErrorLevel(prev => Math.min(prev + 1, 2));
-    };
+    const { currentSrc, handleError } = useMoviePoster(item.poster, fetchedPoster2, item.id);
 
     return (
         <div className="d-flex flex-column" style={{ width: '185px', flexShrink: 0 }}>
             <Link to={`/title/${item.id}`} className="position-relative mb-2">
                 <img
-                    src={getCurrentSrc()}
+                    src={currentSrc}
                     alt={item.title}
                     className="w-100 rounded-1"
                     style={{ height: '270px', objectFit: 'cover', cursor: 'pointer' }}
