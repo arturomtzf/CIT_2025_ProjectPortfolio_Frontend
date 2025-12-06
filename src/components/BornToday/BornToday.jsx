@@ -42,7 +42,7 @@ const BornToday = () => {
             }
 
             try {
-                const res = await fetch(`${API_URL}/actors/bornToday?page=1&pageSize=100`);
+                const res = await fetch(`${API_URL}/actors/bornToday?page=1&pageSize=50`);
                 if (!res.ok) throw new Error("Fetch failed");
                 const data = await res.json();
 

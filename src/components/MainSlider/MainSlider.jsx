@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import CurrentMovie from './CurrentMovie';
 import UpNextItem from './UpNextItem';
+import { getPosterPicture } from '../../utils/picturesHelper';
 
 const FALLBACK_POSTER = 'https://cataas.com/cat';
 const API_URL = import.meta.env.VITE_API_URL;
@@ -8,7 +9,7 @@ const MOCK_TRAILERS = [
     {
         "id": "tt10041958",
         "title": "In Our Blood - El Legado, Jorge Lorenzo",
-        "runTimeInMinutes": null,
+        "runTimeInMinutes": 77,
         "numVotes": 10,
         "averageRating": 8.7,
         "poster": "https://m.media-amazon.com/images/M/MV5BNGI4NDExNmUtYjdhNS00Nzc2LWFhMzItNGEwOWM2MzBkNGQ4XkEyXkFqcGdeQXVyOTA3MDkxNTQ@._V1_SX300.jpg"
@@ -34,25 +35,26 @@ const MOCK_TRAILERS = [
 const MainSlider = () => {
     const [randomMovies, setRandomMovies] = useState(MOCK_TRAILERS);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [errorLevel, setErrorLevel] = useState(0);
+    // 0 = try item.poster
+    // 1 = try poster2
+    // 2 = use fallback
+
+    const changeItem = (index) => {
+        setErrorLevel(0);
+        setCurrentIndex(index);
+    }
 
     const nextItem = () => {
+        setErrorLevel(0);
         setCurrentIndex((prevIndex) => (prevIndex + 1) % randomMovies.length);
     };
 
     const prevItem = () => {
+        setErrorLevel(0);
         setCurrentIndex((prevIndex) =>
             prevIndex === 0 ? randomMovies.length - 1 : prevIndex - 1
         );
-    };
-
-    const handleImageError = (index) => {
-        setRandomMovies(prevMovies => {
-            const newMovies = [...prevMovies];
-            if (newMovies[index].poster !== FALLBACK_POSTER) {
-                newMovies[index] = { ...newMovies[index], poster: FALLBACK_POSTER };
-            }
-            return newMovies;
-        });
     };
 
     useEffect(() => {
@@ -67,18 +69,42 @@ const MainSlider = () => {
                 if (!res.ok) throw new Error("Fetch failed");
                 const data = await res.json();
 
-                // Only update if we actually got an array
                 if (Array.isArray(data) && data.length > 0) {
-                    setRandomMovies(data);
+                    const moviesWithPostersPromises = data.map(async movie => {
+                        const movieCopy = { ...movie };
+                        const secondPoster = await getPosterPicture(movie.title);
+
+                        // Add the poster2 property to the copy
+                        movieCopy.poster2 = secondPoster
+                            ? "https://image.tmdb.org/t/p/w600_and_h900_face/" + secondPoster
+                            : null;
+
+                        return movieCopy;
+                    });
+
+                    const updatedMovies = await Promise.all(moviesWithPostersPromises);
+
+                    setRandomMovies(updatedMovies);
                 }
             } catch (error) {
                 console.error("Error fetching movies, using fallback:", error);
-            } finally {
-
             }
         }
         getRandomMovies();
     }, []);
+
+    // Decide which image to show
+    const getCurrentSrc = () => {
+        console.log(currentMovie);
+        if (errorLevel === 0 && currentMovie.poster) return currentMovie.poster;
+        if (errorLevel <= 1 && currentMovie.poster2) return currentMovie.poster2;
+        return FALLBACK_POSTER;
+    };
+
+    const handleError = () => {
+        console.log(errorLevel);
+        setErrorLevel(prev => Math.min(prev + 1, 2));
+    };
 
     const currentMovie = randomMovies[currentIndex];
 
@@ -95,19 +121,19 @@ const MainSlider = () => {
                     currentMovie={currentMovie}
                     nextItem={nextItem}
                     prevItem={prevItem}
-                    onImageError={() => handleImageError(currentIndex)}
-                    FALLBACK_POSTER={FALLBACK_POSTER}
+                    posterSrc={getCurrentSrc()}
+                    onImageError={handleError}
                 />
 
                 <div className="col-12 col-lg-4">
                     <h5 className="text-warning fw-bold mb-3">Up next</h5>
                     <div className="d-flex flex-column gap-2" style={{ maxHeight: '500px', overflowY: 'auto' }}>
                         {randomMovies.map((movie, index) => (
-                            <div key={movie.id || index} onClick={() => setCurrentIndex(index)}>
+                            <div key={movie.id || index} onClick={() => changeItem(index)}>
                                 <UpNextItem
                                     movie={movie}
                                     isActive={index === currentIndex}
-                                    onImageError={() => handleImageError(index)}
+                                    // onImageError={() => handleImageError(index)}
                                     FALLBACK_POSTER={FALLBACK_POSTER}
                                 />
                             </div>

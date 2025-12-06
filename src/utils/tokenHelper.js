@@ -7,7 +7,7 @@ export const removeToken = () => localStorage.removeItem("token");
 export const isTokenValid = (token) => {
     try {
         const { exp } = jwtDecode(token);
-        console.log(jwtDecode(token))
+        // console.log(jwtDecode(token))
         return exp * 1000 > Date.now();
     } catch {
         return false;

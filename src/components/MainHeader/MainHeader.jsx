@@ -53,7 +53,7 @@ const MainHeader = () => {
                     <div className="vr bg-secondary mx-2" style={{ height: '20px' }}></div>
                 </div>
 
-                 <div className="d-flex flex-grow-1 justify-content-center mx-3">
+                <div className="d-flex flex-grow-1 justify-content-center mx-3">
                     <NavButton label="Actors" location={'/actors'} />
                     <div className="vr bg-secondary mx-2" style={{ height: '20px' }}></div>
                 </div>

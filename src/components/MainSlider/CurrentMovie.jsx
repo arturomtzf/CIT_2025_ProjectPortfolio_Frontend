@@ -1,8 +1,6 @@
 import { Link } from 'react-router-dom';
 
-const CurrentMovie = ({ currentMovie, nextItem, prevItem, onImageError, FALLBACK_POSTER }) => {
-    const posterSrc = currentMovie.poster || FALLBACK_POSTER;
-
+const CurrentMovie = ({ currentMovie, nextItem, prevItem, posterSrc, onImageError }) => {
     return (
         <div className="col-12 col-lg-8 mb-4 mb-lg-0">
             <div
@@ -62,8 +60,8 @@ const CurrentMovie = ({ currentMovie, nextItem, prevItem, onImageError, FALLBACK
                             </div>
 
                             <small className="text-secondary d-flex align-items-center gap-3 fs-6">
-                                <span><i className="bi bi-eye-fill me-1"></i>{currentMovie.numVotes || 'N/A'} Votes</span>
-                                <span><i className="bi bi-clock-fill me-1"></i>{currentMovie.runTimeInMinutes || 'N/A'} Minutes</span>
+                                <span><i className="bi bi-eye-fill me-1"></i>{currentMovie.numVotes?.toLocaleString() ?? 'N/A'} Votes</span>
+                                <span><i className="bi bi-clock-fill me-1"></i>{currentMovie.runTimeInMinutes?.toLocaleString() ?? 'N/A'} Minutes</span>
                             </small>
                         </div>
                     </div>

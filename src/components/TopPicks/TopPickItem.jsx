@@ -1,37 +1,45 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { getPosterPicture } from '../../utils/picturesHelper';
 
 const TopPickItem = ({ item }) => {
-    // State to track if the image failed to load
-    const [imageError, setImageError] = useState(false);
+    const [poster2, setPoster2] = useState(null);
+    const [errorLevel, setErrorLevel] = useState(0);
+    // 0 = try item.poster
+    // 1 = try poster2
+    // 2 = use fallback
 
-    const isImageMissing = !item.poster || imageError;
     const FALLBACK_POSTER = 'https://cataas.com/cat';
 
-    const FallbackPoster = (
-        <img
-            src={FALLBACK_POSTER}
-            alt={FALLBACK_POSTER}
-            className="w-100 rounded-1"
-            style={{ height: '270px', objectFit: 'cover', cursor: 'pointer' }}
-        />
-    );
+    useEffect(() => {
+        const fetchPicture = async () => {
+            const second = await getPosterPicture(item.title);
+            setPoster2("https://image.tmdb.org/t/p/w600_and_h900_face/" + second);
+        };
+        fetchPicture();
+    }, [item.title]);
 
-    const PosterImage = (
-        <img
-            src={item.poster}
-            alt={item.title}
-            className="w-100 rounded-1"
-            style={{ height: '270px', objectFit: 'cover', cursor: 'pointer' }}
-            onError={() => setImageError(true)}
-        />
-    );
+    // Decide which image to show
+    const getCurrentSrc = () => {
+        if (errorLevel === 0 && item.poster) return item.poster;
+        if (errorLevel <= 1 && poster2) return poster2;
+        return FALLBACK_POSTER;
+    };
 
+    const handleError = () => {
+        setErrorLevel(prev => Math.min(prev + 1, 2));
+    };
 
     return (
         <div className="d-flex flex-column" style={{ width: '185px', flexShrink: 0 }}>
             <Link to={`/title/${item.id}`} className="position-relative mb-2">
-                {isImageMissing ? FallbackPoster : PosterImage}
+                <img
+                    src={getCurrentSrc()}
+                    alt={item.title}
+                    className="w-100 rounded-1"
+                    style={{ height: '270px', objectFit: 'cover', cursor: 'pointer' }}
+                    onError={handleError}
+                />
             </Link>
 
             <div className="d-flex flex-column flex-grow-1">
@@ -40,7 +48,6 @@ const TopPickItem = ({ item }) => {
                     <span className="text-white me-3">{item.averageRating}</span>
                 </div>
 
-                {/* Title */}
                 <h6 className="text-white fw-bold text-truncate mb-2" title={item.title}>
                     <Link to={`/title/${item.id}`} className="text-white text-decoration-none hover-underline">
                         {item.title}
