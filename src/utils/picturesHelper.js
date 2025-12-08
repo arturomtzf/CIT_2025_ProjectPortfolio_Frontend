@@ -1,7 +1,8 @@
 const THEMOVIEDB_TOKEN = import.meta.env.VITE_THEMOVIEDB_TOKEN;
 
 export const getProfilePicture = async (name) => {
-    const url = `https://api.themoviedb.org/3/search/person?query=${name}&include_adult=false&language=en-US&page=1`;
+    // const url = `https://api.themoviedb.org/3/search/person?query=${name}&include_adult=false&language=en-US&page=1`;
+    const url = `https://api.themoviedb.org/3/find/${name}?external_source=imdb_id&api_key=fb98335fca6f74842467a37d1a1a2070`;
 
     const options = {
         method: 'GET',
@@ -15,7 +16,8 @@ export const getProfilePicture = async (name) => {
         const res = await fetch(url, options);
         const data = await res.json();
 
-        return data?.results?.[0]?.profile_path || null;
+        // return data?.results?.[0]?.profile_path || null;
+        return data?.person_results?.[0]?.profile_path || null;
 
     } catch (err) {
         console.error(err);
