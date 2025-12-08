@@ -1,15 +1,15 @@
 import MainHeader from '../components/MainHeader/MainHeader';
 import SimpleFooter from "../components/SimpleFooter/SimpleFooter"
-import TitleDetailsComponent from "../components/Movies/Details";
+import ActorsList from "../components/Actors/ActorsList";   
 
-function TitleDetails() {
+function Actors() {
     return (
         <>
             <MainHeader />
-            <TitleDetailsComponent />
+            <ActorsList />
             <SimpleFooter />
         </>
     )
 }
 
-export default TitleDetails;
+export default Actors;
