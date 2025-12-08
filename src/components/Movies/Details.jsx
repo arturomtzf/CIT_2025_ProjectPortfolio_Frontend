@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 
-const FALLBACK_POSTER = 'https://cataas.com/cat';
+const FALLBACK_POSTER = 'https://picsum.dev//300/200';
 
 
 function TitleDetails() {

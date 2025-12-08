@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Pagination from '../Pagination/Pagination';
 
-const FALLBACK_POSTER = 'https://cataas.com/cat';
+const FALLBACK_POSTER = 'https://picsum.dev//300/200';
 
 // Small poster component that mirrors TopPickItem's poster behavior
 function Poster({ src, title, className }) {
@@ -118,7 +118,6 @@ function TitlesList() {
                   })}
               </div>
             </section>
-            {/* (Randomized-Genre section removed) */}
 
             {/* A - Z */}
             <section style={{ marginBottom: 28 }}>

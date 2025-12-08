@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import Pagination from '../Pagination/Pagination';
 
 
-const FALLBACK_POSTER = 'https://cataas.com/cat';
+const FALLBACK_POSTER = 'https://loremfaces.net/96/id/1.jpg';
 
 function ActorsList() {
   const [items, setItems] = useState([]);
