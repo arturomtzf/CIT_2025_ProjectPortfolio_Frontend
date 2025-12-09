@@ -7,7 +7,6 @@ const BornTodayItem = ({ person }) => {
 
     useEffect(() => {
         const fetchPicture = async () => {
-            // const pic = await getProfilePicture(person.firstname + " " + person.lastname);
             const pic = await getProfilePicture(person.personId);
             setProfilePicture(pic);
         };

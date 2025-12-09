@@ -31,7 +31,7 @@ const MainHeader = () => {
         if (valid) {
             setUserName(getUserName(token));
         }
-    }, []); // ✅ Runs only once on mount
+    }, []);
 
     return (
         <nav

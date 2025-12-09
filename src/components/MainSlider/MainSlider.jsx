@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import CurrentMovie from './CurrentMovie';
 import UpNextItem from './UpNextItem';
-import { getPosterPicture } from '../../utils/picturesHelper';
+import { addSecondPoster, getPosterPicture } from '../../utils/picturesHelper';
 
 const API_URL = import.meta.env.VITE_API_URL;
 const MOCK_TRAILERS = [
@@ -59,28 +59,15 @@ const MainSlider = () => {
             try {
                 const res = await fetch(`${API_URL}/movies/random?page=1&pageSize=4`);
                 if (!res.ok) throw new Error("Fetch failed");
+
                 const data = await res.json();
+                const newData = await addSecondPoster(data);
 
-                if (Array.isArray(data) && data.length > 0) {
-                    const moviesWithPostersPromises = data.map(async movie => {
-                        const movieCopy = { ...movie };
-                        const secondPoster = await getPosterPicture(movie.title);
-
-                        // Add the poster2 property to the copy
-                        movieCopy.poster2 = secondPoster
-                            ? "https://image.tmdb.org/t/p/w600_and_h900_face/" + secondPoster
-                            : null;
-
-                        return movieCopy;
-                    });
-
-                    const updatedMovies = await Promise.all(moviesWithPostersPromises);
-
-                    setRandomMovies(updatedMovies);
-                }
+                setRandomMovies(newData);
             } catch (error) {
                 console.error("Error fetching movies, using fallback:", error);
             }
+
         }
         getRandomMovies();
     }, []);

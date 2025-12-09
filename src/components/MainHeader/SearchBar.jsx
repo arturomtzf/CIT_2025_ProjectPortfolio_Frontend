@@ -1,77 +1,127 @@
 import { useState, useEffect, useRef } from 'react';
+import CategoryDropdown from './SearchBar/CategoryDropdown';
+import SearchResults from './SearchBar/SearchResults';
+import { getSearchedTitles, getSearchedActors } from '../../utils/searchHelper';
 
 const SearchBar = () => {
-    const [category, setCategory] = useState('All');
+    const [category, setCategory] = useState('Titles');
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
+    const [query, setQuery] = useState('');
+    const [results, setResults] = useState([]);
+    const [showResults, setShowResults] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+
     const searchRef = useRef(null);
+    const categories = ['Titles', 'Actors'];
 
-    const categories = ['All', 'Titles', 'Actors']; // Might be good to change to get categories from db
+    useEffect(() => {
+        // Clear results if query is empty
+        if (query.length === 0) {
+            setResults([]);
+            setShowResults(false);
+            setIsLoading(false);
+            return;
+        }
 
-    // Logic to close menu when clicking outside
+        setIsLoading(true);
+        setShowResults(true);
+
+        // Create controller
+        const controller = new AbortController();
+        const signal = controller.signal;
+
+        const delaySearch = setTimeout(async () => {
+            try {
+                let filteredData = [];
+
+                if (category === 'Titles') {
+                    filteredData = await getSearchedTitles(query, signal);
+                } else {
+                    filteredData = await getSearchedActors(query, signal);
+                }
+
+                console.log(filteredData);
+                setResults(filteredData || []);
+                setIsLoading(false);
+
+            } catch (error) {
+                // Ignore errors caused by aborting
+                if (error.name !== 'AbortError') {
+                    console.error("Search failed", error);
+                    setIsLoading(false);
+                }
+            }
+        }, 300);
+
+        // Cleanup function
+        return () => {
+            controller.abort();
+            clearTimeout(delaySearch);
+        };
+    }, [query, category]);
+
+    // Click Outside Logic
     useEffect(() => {
         const handleClickOutside = (event) => {
-            // If the menu is open AND the click is NOT inside our component
-            if (isDropdownOpen && searchRef.current && !searchRef.current.contains(event.target)) {
+            if (searchRef.current && !searchRef.current.contains(event.target)) {
                 setIsDropdownOpen(false);
+                setShowResults(false);
             }
         };
-
-        // Attach listener to the whole document
         document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            // Cleanup listener when component is removed
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, [isDropdownOpen]);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
 
     return (
-        <div ref={searchRef} className="input-group flex-grow-1" style={{ maxWidth: '600px' }}>
+        <>
+            <style>
+                {`
+                    .custom-hover-item:hover {
+                        background-color: #343a40 !important;
+                        cursor: pointer;
+                    }
+                    .custom-hover-item:hover span.text-light {
+                        color: #f8f9fa !important;
+                    }
+                `}
+            </style>
 
-            <div className="dropdown">
-                <button
-                    className="btn btn-light dropdown-toggle fw-bold border-0 h-100 d-flex align-items-center"
-                    type="button"
-                    style={{
-                        fontSize: '14px',
-                        borderTopRightRadius: 0,
-                        borderBottomRightRadius: 0,
-                        paddingTop: '6px',
-                        paddingBottom: '6px'
+            <div ref={searchRef} className="input-group flex-grow-1 position-relative" style={{ maxWidth: '600px' }}>
+
+                <CategoryDropdown
+                    currentCategory={category}
+                    categories={categories}
+                    isOpen={isDropdownOpen}
+                    setIsOpen={setIsDropdownOpen}
+                    onSelect={(cat) => {
+                        setCategory(cat);
+                        setIsDropdownOpen(false);
                     }}
-                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                >
-                    {category}
+                />
+
+                <input
+                    type="text"
+                    className="form-control border-0"
+                    placeholder={`Search ${category}...`}
+                    style={{ paddingTop: '6px', paddingBottom: '6px' }}
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    onFocus={() => { if (results.length > 0 || isLoading) setShowResults(true); }}
+                />
+
+                <button className="btn btn-light border-0" type="button">
+                    <i className="bi bi-search text-secondary"></i>
                 </button>
 
-                <ul className={`dropdown-menu ${isDropdownOpen ? 'show' : ''}`}>
-                    {categories.map((cat) => (
-                        <li key={cat}>
-                            <button
-                                className="dropdown-item"
-                                onClick={() => {
-                                    setCategory(cat);
-                                    setIsDropdownOpen(false);
-                                }}
-                            >
-                                {cat}
-                            </button>
-                        </li>
-                    ))}
-                </ul>
+                <SearchResults
+                    results={results}
+                    show={showResults}
+                    isLoading={isLoading}
+                    category={category}
+                />
             </div>
-
-            <input
-                type="text"
-                className="form-control border-0"
-                placeholder="Search"
-                style={{ paddingTop: '6px', paddingBottom: '6px' }}
-            />
-
-            <button className="btn btn-light border-0" type="button">
-                <i className="bi bi-search text-secondary"></i>
-            </button>
-        </div>
+        </>
     );
 };
 

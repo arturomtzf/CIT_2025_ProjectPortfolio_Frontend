@@ -53,3 +53,43 @@ export const getPosterPicture = async (name) => {
         return null;
     }
 };
+
+export const addSecondPoster = async (data) => {
+    if (Array.isArray(data) && data.length > 0) {
+        const updatedMovies = [];
+
+        for (const movie of data) {
+            const movieCopy = { ...movie };
+            const secondPoster = await getPosterPicture(movie.title);
+
+            movieCopy.poster2 = secondPoster
+                ? "https://image.tmdb.org/t/p/w600_and_h900_face/" + secondPoster
+                : null;
+
+            updatedMovies.push(movieCopy);
+        }
+
+        return updatedMovies;
+    }
+    return data;
+}
+
+export const addProfilePicture = async (data) => {
+    if (Array.isArray(data) && data.length > 0) {
+        const updatedActors = [];
+
+        for (const actor of data) {
+            const actorCopy = { ...actor };
+            const picture = await getProfilePicture(actor.personId);
+
+            actorCopy.picture = picture
+                ? "https://image.tmdb.org/t/p/w300_and_h450_face/" + picture
+                : null;
+
+            updatedActors.push(actorCopy);
+        }
+
+        return updatedActors;
+    }
+    return data;
+}
