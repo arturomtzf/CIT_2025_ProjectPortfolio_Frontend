@@ -1,16 +1,27 @@
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import ProfilePicture from './ProfilePicture';
 import PosterPicture from './PosterPicture';
+import { postSearchedTitle } from '../../../utils/searchHelper';
 
 const ResultItem = ({ item, category }) => {
+    const navigate = useNavigate();
     const fullName = item.firstname + " " + item.lastname;
-    const urlTitle = `/title/${item.titleId}`;
-    const urlActor = `/actor/${item.personId}`;
+    const url = category === "Titles"
+        ? `/title/${item.titleId}`
+        : `/actor/${item.personId}`;
 
     const isTitle = category === 'Titles';
 
+    const handleClick = () => {
+        if (category === "Titles")
+            postSearchedTitle(item.titleId);
+
+        navigate(url);
+    };
+
     return (
-        <Link to={isTitle ? urlTitle : urlActor}
+        <button
+            onClick={handleClick}
             className="dropdown-item d-flex align-items-start p-2 border-bottom border-secondary custom-hover-item"
             style={{ whiteSpace: 'normal', color: 'white' }}
             type="button"
@@ -24,7 +35,7 @@ const ResultItem = ({ item, category }) => {
                     {isTitle ? item.releaseDate : item.birthdate}
                 </span>
             </div>
-        </Link>
+        </button>
     );
 };
 

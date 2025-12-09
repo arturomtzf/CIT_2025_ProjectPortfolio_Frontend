@@ -1,4 +1,5 @@
 import { addSecondPoster, addProfilePicture } from "./picturesHelper";
+import { getToken, isTokenValid } from "./tokenHelper";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -59,3 +60,29 @@ export const getSearchedActors = async (searchString, signal) => {
         return null;
     }
 };
+
+export const postSearchedTitle = async (titleId) => {
+    let url = `${API_URL}/search/history/${titleId}`;
+    const token = getToken();
+
+
+    if (!isTokenValid(token)) return;
+
+    const options = {
+        method: 'POST',
+        headers: {
+            accept: 'application/json',
+            Authorization: 'Bearer ' + token
+        }
+    };
+
+    try {
+        const res = await fetch(url, options);
+        console.log(res);
+
+        return res;
+    } catch (err) {
+        console.error(err);
+        return null;
+    }
+}
