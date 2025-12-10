@@ -1,4 +1,7 @@
 import { useEffect, useState } from "react";
+import SidebarSection from "./SidebarSection";
+import { Link } from "react-router-dom";
+
 
 export default function WatchlistSection() {
 
@@ -46,13 +49,45 @@ export default function WatchlistSection() {
         fetchWatchlist();
     }, []);
 
+    const handleRemove = async (titleId) => {
+        try{
+            const token = localStorage.getItem("token")
+            if(!token) {
+            return alert("You need to be logged in")
+        }
+
+        const res = await fetch(`${API_URL}/bookmarks/movies/${titleId}`, {
+            method: "DELETE",
+            headers:  {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            }
+        })
+
+        if(!res.ok) {
+            alrert("Failed to delete a title from the watchlist")
+            return
+        }
+
+        setWatchlist(prev => prev.filter(item => item.titleid !== titleId))
+
+        }
+        catch(err)
+        {
+            console.log(err)
+            alert("Could not remove title")
+        }
+        
+    }
+
     if (loading) return <p>Loading your watchlist...</p>;
     if (error) return <p style={{ color: "red" }}>{error}</p>;
 
 
     return (
         <div className="container my-4">
-            <div className="col-12 col-lg-8">
+            <div className="row">
+                <div className="col-12 col-lg-8">
                 <p className="text">{watchlist.length} titles</p>
 
             <div className="d-flex flex-column mt-4" style={{ gap: "1.5rem" }}>
@@ -78,9 +113,10 @@ export default function WatchlistSection() {
                     return (
                         <div
                             key={item.id || title}
-                            className="d-flex bg-white shadow-sm p-3 rounded-3"
-                            style={{ gap: "1rem" }}
+                            className="d-flex bg-white shadow-sm p-3 rounded-3 position-relative"
+                            style={{ gap: "1rem", display: "flex" }}
                         >
+                        <div className="d-flex flex-column" style={{ width: "100px" }}>
                             <img
                                 src={poster}
                                 alt={title}
@@ -95,10 +131,28 @@ export default function WatchlistSection() {
                                     borderRadius: "8px"
                                 }}
                             />
+                            <button className="btn btn-danger btn-sm  " style={{
+                                        
+                                        marginTop: "10px",
+                                        padding: "2px 6px",
+                                        fontSize: "0.75rem",
+                                        backgroundColor: "#F5C518",
+                                        borderRadius: "4px",
+                                        color: "#000000ff",
+                                        border: "none",
+                                        width: "70%",
+                                        
+                                        
+                                    }} onClick={() =>handleRemove(item.titleid)}>Remove</button>
+                            </div>
 
-
-                            <div className="d-flex flex-column">
-                                <h4 className="m-0 fw-bold" style={{color: '#000'}}>{title}</h4>
+                            <div className="d-flex flex-column flex-grow-1">
+                                <Link to={`/title/${item.titleid}`} className="text-decoration-none">
+                                    <h4 className="m-0 fw-bold" style={{color: '#000'}}
+                                    onMouseEnter={e => e.currentTarget.style.color = "#575656ff"}
+                                    onMouseLeave={e => e.currentTarget.style.color = "#000000ff"}>{title}</h4>
+                                </Link>
+                                
                                 <p className="text-muted m-0">
                                 {year}  
                                 {titleType && ` -  ${titleType}`}
@@ -106,12 +160,22 @@ export default function WatchlistSection() {
                              </p>
 
                                 <p className="mt-2" style={{color: '#000'}}>{plot}</p>
+
+                                
                             </div>
                         </div>
                     );
                 })}
             </div>
             </div>
+
+
+            
+            <div className="col-12 col-lg-4 mt-4 mt-lg-0">
+                <SidebarSection totalTitles = {watchlist.length}/>
+            </div>
+            </div>
+
             
         </div>
     );
