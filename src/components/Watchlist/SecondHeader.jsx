@@ -1,18 +1,17 @@
-export default function SecondHeader() {
+export default function SecondHeader({ title, description }) {
     return (
         <div className="bg-dark text-white py-5 px- border-bottom border-secondary">
-            <div 
+            <div
                 className="container d-flex justify-content-between align-items-center"
                 style={{ maxWidth: "1200px" }}>
-                
+
                 <div>
-                    <h1 className="fs-3 fw-bold m-0">Your Watchlist</h1>
+                    <h1 className="fs-3 fw-bold m-0">{title}</h1>
                     <p className="text-secondary m-0">
-                        Your Watchlist is the place to track the titles you want to watch. You can sort your Watchlist by the IMDb rating or popularity score and arrange your titles in the order you want to see them.
+                        {description}
                     </p>
                 </div>
 
-                
             </div>
         </div>
     );

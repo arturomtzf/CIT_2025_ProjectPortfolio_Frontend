@@ -65,7 +65,7 @@ export default function WatchlistSection() {
         })
 
         if(!res.ok) {
-            alrert("Failed to delete a title from the watchlist")
+            alert("Failed to delete a title from the watchlist")
             return
         }
 

@@ -13,6 +13,7 @@ import ActorDetails from './screens/ActorDetails.jsx';
 import Actors from './screens/Actors.jsx';
 import Register from './screens/Register.jsx';
 import Watchlist from './screens/Watchlist.jsx';
+import YourActivity from './screens/YourActivity.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 
 const router = createBrowserRouter([
@@ -28,6 +29,12 @@ const router = createBrowserRouter([
     path: '/watchlist', element:
       (<ProtectedRoute>
         <Watchlist />
+      </ProtectedRoute>)
+  },
+  {
+    path: '/activity', element:
+      (<ProtectedRoute>
+        <YourActivity />
       </ProtectedRoute>)
   },
   { path: '*', element: <NotFound /> }

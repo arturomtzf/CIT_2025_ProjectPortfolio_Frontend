@@ -60,7 +60,7 @@ export const addSecondPoster = async (data) => {
 
         for (const movie of data) {
             const movieCopy = { ...movie };
-            const secondPoster = await getPosterPicture(movie.title);
+            const secondPoster = await getPosterPicture(movie.title || movie.titlename);
 
             movieCopy.poster2 = secondPoster
                 ? "https://image.tmdb.org/t/p/w600_and_h900_face/" + secondPoster
