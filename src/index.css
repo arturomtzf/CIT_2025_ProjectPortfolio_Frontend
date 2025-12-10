@@ -64,10 +64,27 @@ html, body, #root {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  text-decoration: none;
 }
 .item-img { width: 100%; height: 260px; object-fit: cover; display:block; }
 .item-body { padding: 10px; }
-.item-title { font-size: 1rem; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.item-title {
+  font-size: 1.05rem;
+  margin: 0 0 6px 0;
+  font-weight: 600;
+  color: #ffffff;
+  /* allow up to 2 lines with ellipsis */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* Ensure link underlines don't appear beneath titles */
+.item-card .item-title,
+.item-card {
+  text-decoration: none;
+}
 .item-sub { color: rgba(255,255,255,0.7); font-size: 0.85rem; }
 
 @media (min-width: 700px) {

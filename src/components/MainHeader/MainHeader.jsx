@@ -11,6 +11,37 @@ const DROPDOWN_OPTIONS = [
     { "option": "Sign out", "url": "/signout" },
 ]
 
+const GENRES_OPTIONS = [
+    { "option": "Action", "url": "/titles?genre=Action" },
+    { "option": "Adventure", "url": "/titles?genre=Adventure" },
+    { "option": "Comedy", "url": "/titles?genre=Comedy" },
+    { "option": "Drama", "url": "/titles?genre=Drama" },
+    { "option": "Fantasy", "url": "/titles?genre=Fantasy" },
+    { "option": "Horror", "url": "/titles?genre=Horror" },
+    { "option": "Mystery", "url": "/titles?genre=Mystery" },
+    { "option": "Romance", "url": "/titles?genre=Romance" },
+    { "option": "Sci-Fi", "url": "/titles?genre=Sci-Fi" },
+    { "option": "Thriller", "url": "/titles?genre=Thriller" },
+    { "option": "Western", "url": "/titles?genre=Western" },
+    { "option": "Animation", "url": "/titles?genre=Animation" },
+    { "option": "Documentary", "url": "/titles?genre=Documentary" },
+    { "option": "Family", "url": "/titles?genre=Family" },
+    { "option": "History", "url": "/titles?genre=History" },
+    { "option": "Music", "url": "/titles?genre=Music" },
+    { "option": "War", "url": "/titles?genre=War" },
+    { "option": "Sport", "url": "/titles?genre=Sport" },
+    { "option": "Crime", "url": "/titles?genre=Crime" },
+    { "option": "Biography", "url": "/titles?genre=Biography" },
+    { "option": "Musical", "url": "/titles?genre=Musical" },
+    { "option": "Short", "url": "/titles?genre=Short" },
+    { "option": "Reality-TV", "url": "/titles?genre=Reality-TV" },
+    { "option": "Talk-Show", "url": "/titles?genre=Talk-Show" },
+    { "option": "Game-Show", "url": "/titles?genre=Game-Show" },
+    { "option": "News", "url": "/titles?genre=News" },
+    { "option": "Adult", "url": "/titles?genre=Adult" },
+    { "option": "Other", "url": "/titles?genre=Other" },
+]
+
 const LANGUAGE_OPTIONS = [
     { "option": "English", "url": "#" },
     { "option": "Spanish", "url": "#" },
@@ -49,7 +80,7 @@ const MainHeader = () => {
                 </div>
 
                 <div className="d-flex flex-grow-1 justify-content-center mx-3">
-                    <NavButton label="Titles" location={'/titles'} />
+                    <NavButton label="Titles" dropdownOptions={GENRES_OPTIONS} />
                     <div className="vr bg-secondary mx-2" style={{ height: '20px' }}></div>
                 </div>
 

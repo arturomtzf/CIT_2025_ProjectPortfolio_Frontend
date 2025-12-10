@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import MainHeader from '../components/MainHeader/MainHeader.jsx';
-import Pagination from '../components/Pagination/Pagination.jsx';
-import SimpleFooter from "../components/SimpleFooter/SimpleFooter"
+import Pagination from '../Pagination/Pagination';
 
-const FALLBACK_POSTER = 'https://cataas.com/cat';
+
+const FALLBACK_POSTER = 'https://loremfaces.net/96/id/1.jpg';
 
 function ActorsList() {
   const [items, setItems] = useState([]);
@@ -48,7 +47,6 @@ function ActorsList() {
 
   return (
     <>
-      <MainHeader />
       <div className="list-container">
         <h3 style={{marginBottom:12}}>People</h3>
 
@@ -83,7 +81,6 @@ function ActorsList() {
           </>
         )}
       </div>
-      <SimpleFooter />
     </>
   );
 }
