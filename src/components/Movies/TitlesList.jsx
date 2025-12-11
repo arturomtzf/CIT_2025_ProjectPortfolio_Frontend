@@ -1,23 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Pagination from '../Pagination/Pagination';
-
-const FALLBACK_POSTER = 'https://picsum.dev//300/200';
-
-// Small poster component that mirrors TopPickItem's poster behavior
-function Poster({ src, title, className }) {
-  const [imageError, setImageError] = useState(false);
-  const isMissing = !src || imageError;
-  return (
-    <img
-      src={isMissing ? FALLBACK_POSTER : src}
-      alt={title}
-      className={(className ? className + ' ' : '') + 'w-100 rounded-1'}
-      style={{ height: '270px', objectFit: 'cover', cursor: 'pointer' }}
-      onError={() => setImageError(true)}
-    />
-  );
-}
+import { useMoviePoster } from '../../hooks/useMoviePoster';
 
 function TitlesList() {
   const [movies, setMovies] = useState([]);
@@ -84,6 +68,23 @@ function TitlesList() {
 
   // (removed randomized-genre section and related state)
 
+  // Child component that uses the `useMoviePoster` hook per movie.
+  function MoviePoster({ movie, className = '', style = {}, alt }) {
+    const primary = movie?.poster || movie?.Poster || movie?.posterUrl || movie?.image || null;
+    const secondary = movie?.poster2 || movie?.backupPoster || null;
+    const idKey = movie?.id || movie?._id || movie?.movieId || null;
+    const { currentSrc, handleError } = useMoviePoster(primary, secondary, idKey);
+    return (
+      <img
+        src={currentSrc}
+        alt={alt || (movie?.title || movie?.Title || 'poster')}
+        className={className}
+        style={style}
+        onError={handleError}
+      />
+    );
+  }
+
   return (
     <>
       
@@ -108,7 +109,7 @@ function TitlesList() {
                     const sub = m?.averageRating ? `${m.averageRating} ★` : '';
                     return (
                       <Link key={m.id} to={`/title/${m.id}`} className="item-card">
-                        <Poster src={m?.poster || m?.Poster} title={titleText} className="item-img" />
+                        <MoviePoster movie={m} className="item-img w-100 rounded-1" style={{ height: '270px', objectFit: 'cover', cursor: 'pointer' }} alt={titleText} />
                         <div className="item-body">
                           <div className="item-title">{titleText}</div>
                           <div className="item-sub">{sub}</div>
@@ -130,7 +131,7 @@ function TitlesList() {
                     const rating = m?.averageRating ?? m?.rating ?? '';
                     return (
                       <Link key={m.id} to={`/title/${m.id}`} className="item-card">
-                        <Poster src={m?.poster || m?.Poster} title={titleText} className="item-img" />
+                        <MoviePoster movie={m} className="item-img w-100 rounded-1" style={{ height: '270px', objectFit: 'cover', cursor: 'pointer' }} alt={titleText} />
                         <div className="item-body">
                           <div className="item-title">{titleText}</div>
                           <div className="item-sub">{rating ? `${rating} ★` : ''}</div>
