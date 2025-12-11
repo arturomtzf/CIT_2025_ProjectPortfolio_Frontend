@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-
-const FALLBACK_POSTER = 'https://picsum.dev//300/200';
+import { useMoviePoster } from '../../hooks/useMoviePoster';
 
 
 function TitleDetails() {
@@ -30,6 +29,24 @@ function TitleDetails() {
     load();
   }, [id]);
 
+  // Hook to manage the main poster with guarded fallbacks. pass title fields (may be undefined during load)
+  const { currentSrc: posterSrc, handleError: posterHandleError } = useMoviePoster(
+    title?.poster || title?.posterUrl || title?.image || null,
+    title?.poster2 || title?.backupPoster || null,
+    title?.id || title?._id || id
+  );
+
+  // local component to render actor images using the same hook
+  function ActorPoster({ actor, className = '', style = {}, alt }) {
+    const primary = actor?.photo || actor?.headshot || null;
+    const secondary = actor?.photo2 || actor?.backupPhoto || null;
+    const key = actor?.personId || actor?.id || actor?.name || null;
+    const { currentSrc, handleError } = useMoviePoster(primary, secondary, key);
+    return (
+      <img src={currentSrc} alt={alt} className={className} style={style} onError={handleError} />
+    );
+  }
+
   if (loading) return (
     <>
       <div className="title-container">Loading…</div>
@@ -54,7 +71,7 @@ function TitleDetails() {
           <div className="title-grid">
             {/* Left: Poster with rating/votes below */}
             <aside className="poster-card">
-              <img src={poster} alt={title.title} className="poster-img" onError={(e)=>{e.currentTarget.src = FALLBACK_POSTER}} />
+              <img src={posterSrc} alt={title.title} className="poster-img" onError={posterHandleError} />
               <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', padding:'10px'}}>
                 <span className="badge">{title.rating != null ? `${title.rating.toFixed(1)} ★` : '—'}</span>
                 <span className="badge">{title.numberOfVotes != null ? `${title.numberOfVotes.toLocaleString()} votes` : 'No votes'}</span>
@@ -140,10 +157,9 @@ function TitleDetails() {
                 const isString = typeof actor === 'string';
                 const actorName = isString ? actor : (actor.name || `${actor.firstname || ''} ${actor.lastname || ''}`.trim());
                 const actorId = isString ? null : actor.personId;
-                const imgSrc = (actor && actor.photo) ? actor.photo : FALLBACK_POSTER;
                 const card = (
                   <div className="item-card">
-                    <img src={imgSrc} className="item-img" alt={actorName} onError={(e)=>{e.currentTarget.src = FALLBACK_POSTER}} />
+                    <ActorPoster actor={actor} className="item-img" style={{ height: '260px', objectFit: 'cover' }} alt={actorName} />
                     <div className="item-body">
                       <h6 className="item-title">{actorName}</h6>
                     </div>
