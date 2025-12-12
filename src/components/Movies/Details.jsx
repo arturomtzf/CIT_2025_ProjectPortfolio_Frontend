@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useMoviePoster } from '../../hooks/useMoviePoster';
+import RatingForm from './RatingForm';
 
 
 function TitleDetails() {
   const { id } = useParams();
   const [title, setTitle] = useState(null);
+  const [showRatingForm, setShowRatingForm] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -47,6 +49,8 @@ function TitleDetails() {
     );
   }
 
+  // rating form moved to modular component file
+
   if (loading) return (
     <>
       <div className="title-container">Loading…</div>
@@ -69,13 +73,21 @@ function TitleDetails() {
       <div className="title-container">
         <div className="title-container">
           <div className="title-grid">
-            {/* Left: Poster with rating/votes below */}
+            {/* Left: Poster with rating/votes below (click score to open rating form) */}
             <aside className="poster-card">
               <img src={posterSrc} alt={title.title} className="poster-img" onError={posterHandleError} />
               <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', padding:'10px'}}>
-                <span className="badge">{title.rating != null ? `${title.rating.toFixed(1)} ★` : '—'}</span>
+                <button type="button" onClick={() => setShowRatingForm(s => !s)} style={{ background: 'transparent', border: 'none', color: 'inherit', cursor: 'pointer' }} aria-label="Toggle rating form">
+                  <span className="badge">{title.rating != null ? `${title.rating.toFixed(1)} ★` : '—'}</span>
+                </button>
                 <span className="badge">{title.numberOfVotes != null ? `${title.numberOfVotes.toLocaleString()} votes` : 'No votes'}</span>
               </div>
+
+              {showRatingForm && (
+                <div style={{ padding: 10 }}>
+                  <RatingForm id={id} title={title} setTitle={setTitle} onClose={() => setShowRatingForm(false)} />
+                </div>
+              )}
             </aside>
 
             {/* Right: Content */}
@@ -103,6 +115,8 @@ function TitleDetails() {
               <section className="overview" style={{marginTop:12}}>
                 <p>{plot || 'No description available.'}</p>
               </section>
+
+              
 
               {/* People rows like IMDb */}
               {title.directors && title.directors.length > 0 && (
