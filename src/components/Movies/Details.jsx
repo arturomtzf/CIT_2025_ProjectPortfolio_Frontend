@@ -58,7 +58,7 @@ function TitleDetails() {
     </>
   );
 
-  const poster = title.poster || title.posterUrl || FALLBACK_POSTER;
+  const poster = posterSrc;
   const release = title.releaseDate || title.startYear || title.year || '';
   const runtime = title.runtimeMinutes || title.runtime || null;
   const genres = (title.genre && typeof title.genre === 'string') ? title.genre.split(',').map(s=>s.trim()).filter(Boolean) : (title.genres || []);

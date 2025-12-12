@@ -1,6 +1,13 @@
 const THEMOVIEDB_TOKEN = import.meta.env.VITE_THEMOVIEDB_TOKEN;
 
+// Simple in-memory cache to avoid repeating TMDB lookups during a session.
+// Keyed by the provided `name` (usually personId or identifier used by the app).
+const _profileCache = new Map();
+
 export const getProfilePicture = async (name) => {
+    if (!name) return null;
+    // return cached value if present (could be null meaning previous miss)
+    if (_profileCache.has(name)) return _profileCache.get(name);
     // const url = `https://api.themoviedb.org/3/search/person?query=${name}&include_adult=false&language=en-US&page=1`;
     const url = `https://api.themoviedb.org/3/find/${name}?external_source=imdb_id&api_key=fb98335fca6f74842467a37d1a1a2070`;
 
@@ -16,11 +23,14 @@ export const getProfilePicture = async (name) => {
         const res = await fetch(url, options);
         const data = await res.json();
 
-        // return data?.results?.[0]?.profile_path || null;
-        return data?.person_results?.[0]?.profile_path || null;
-
+        const result = data?.person_results?.[0]?.profile_path || null;
+        // cache the result (could be null)
+        _profileCache.set(name, result);
+        return result;
     } catch (err) {
         console.error(err);
+        // cache miss as null to avoid immediate retries
+        _profileCache.set(name, null);
         return null;
     }
 };

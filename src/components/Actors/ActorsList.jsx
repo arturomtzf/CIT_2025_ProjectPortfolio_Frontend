@@ -1,9 +1,40 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Pagination from '../Pagination/Pagination';
+import { getProfilePicture } from '../../utils/picturesHelper';
 
 
 const FALLBACK_POSTER = 'https://loremfaces.net/96/id/1.jpg';
+
+// Component to render the image for an actor or movie item.
+function ActorTile({ item, alt }) {
+  const [profilePicture, setProfilePicture] = useState(null);
+
+  useEffect(() => {
+    let mounted = true;
+    const fetchPicture = async () => {
+      if (!item || !item.personId) return;
+      try {
+        const pic = await getProfilePicture(item.personId);
+        if (!mounted) return;
+        setProfilePicture(pic ? `https://image.tmdb.org/t/p/w300_and_h450_face${pic}` : null);
+      } catch (err) {
+        if (!mounted) return;
+        setProfilePicture(null);
+      }
+    };
+    fetchPicture();
+    return () => { mounted = false; };
+  }, [item && item.personId]);
+
+  const src = item && item.personId
+    ? (profilePicture || item.photo || item.poster || FALLBACK_POSTER)
+    : (item.poster || item.photo || FALLBACK_POSTER);
+
+  return (
+    <img src={src} className="item-img" alt={alt} onError={(e) => { if (e?.currentTarget && e.currentTarget.src !== FALLBACK_POSTER) e.currentTarget.src = FALLBACK_POSTER; }} />
+  );
+}
 
 function ActorsList() {
   const [items, setItems] = useState([]);
@@ -66,7 +97,7 @@ function ActorsList() {
                 return (
                   <Link key={key} to={to} className="text-decoration-none">
                     <div className="item-card">
-                      <img src={m.photo || m.poster || FALLBACK_POSTER} className="item-img" alt={titleText} onError={(e)=>{e.currentTarget.src = FALLBACK_POSTER}} />
+                      <ActorTile item={m} alt={titleText} />
                       <div className="item-body">
                         <h6 className="item-title">{titleText}</h6>
                         <div className="item-sub">{sub}</div>
