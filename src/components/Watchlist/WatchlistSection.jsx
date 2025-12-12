@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 export default function WatchlistSection() {
 
     const API_URL = import.meta.env.VITE_API_URL;
-
+    const TRASH_CAN = 'https://img.icons8.com/fluent-systems-regular/512/FA5252/trash.png'
     const [watchlist, setWatchlist] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -39,6 +39,7 @@ export default function WatchlistSection() {
                 const data = await res.json();
                 console.log("Watchlist data: ", data)
                 setWatchlist(data);
+                localStorage.setItem("titleCount", data.length)
             } catch (err) {
                 setError("Network error. Could not load watchlist.");
             } finally {
@@ -113,8 +114,8 @@ export default function WatchlistSection() {
                     return (
                         <div
                             key={item.id || title}
-                            className="d-flex bg-white shadow-sm p-3 rounded-3 position-relative"
-                            style={{ gap: "1rem", display: "flex" }}
+                            className="d-flex bg-white shadow-sm p-3 rounded-3"
+                            style={{ gap: "1rem", position: "relative"}}
                         >
                         <div className="d-flex flex-column" style={{ width: "100px" }}>
                             <img
@@ -131,19 +132,7 @@ export default function WatchlistSection() {
                                     borderRadius: "8px"
                                 }}
                             />
-                            <button className="btn btn-danger btn-sm  " style={{
-                                        
-                                        marginTop: "10px",
-                                        padding: "2px 6px",
-                                        fontSize: "0.75rem",
-                                        backgroundColor: "#F5C518",
-                                        borderRadius: "4px",
-                                        color: "#000000ff",
-                                        border: "none",
-                                        width: "70%",
-                                        
-                                        
-                                    }} onClick={() =>handleRemove(item.titleid)}>Remove</button>
+                            
                             </div>
 
                             <div className="d-flex flex-column flex-grow-1">
@@ -157,10 +146,22 @@ export default function WatchlistSection() {
                                 {year}  
                                 {titleType && ` -  ${titleType}`}
                                 {episodes && ` -  ${episodes} episodes`} 
-                             </p>
+                                </p>
+                                
+                                    
+                                         <p className="mt-2" style={{color: '#000'}}>{plot}</p>
 
-                                <p className="mt-2" style={{color: '#000'}}>{plot}</p>
+                                    </div>
 
+                                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center"}}>
+                                        <img 
+                                            src = {TRASH_CAN} 
+                                            alt="Remove"
+                                            style={{ width: "24px", height: "24px", cursor: "pointer" }}
+                                            onClick={() =>handleRemove(item.titleid)}
+                                        />
+                                   
+                                
                                 
                             </div>
                         </div>
