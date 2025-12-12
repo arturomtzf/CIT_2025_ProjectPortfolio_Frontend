@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useMoviePoster } from '../../hooks/useMoviePoster';
 import RatingForm from './RatingForm';
+import { getProfilePicture } from '../../utils/picturesHelper';
 
 
 function TitleDetails() {
@@ -44,8 +45,32 @@ function TitleDetails() {
     const secondary = actor?.photo2 || actor?.backupPhoto || null;
     const key = actor?.personId || actor?.id || actor?.name || null;
     const { currentSrc, handleError } = useMoviePoster(primary, secondary, key);
+
+    const [tmdbSrc, setTmdbSrc] = useState(null);
+
+    useEffect(() => {
+      let mounted = true;
+      const load = async () => {
+        // prefer personId when available (addProfilePicture uses personId earlier)
+        const lookupKey = actor?.personId || actor?.id || actor?.name || null;
+        if (!lookupKey) return;
+        try {
+          const path = await getProfilePicture(lookupKey);
+          if (!mounted) return;
+          if (path) setTmdbSrc(`https://image.tmdb.org/t/p/w300_and_h450_face${path}`);
+        } catch (err) {
+          // ignore - fallback to currentSrc
+        }
+      };
+      load();
+      return () => { mounted = false; };
+    }, [actor?.personId, actor?.id, actor?.name]);
+
+    const src = tmdbSrc || currentSrc;
+    const onError = tmdbSrc ? () => setTmdbSrc(null) : handleError;
+
     return (
-      <img src={currentSrc} alt={alt} className={className} style={style} onError={handleError} />
+      <img src={src} alt={alt} className={className} style={style} onError={onError} />
     );
   }
 
