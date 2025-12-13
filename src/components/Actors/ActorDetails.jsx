@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import { getProfilePicture } from '../../utils/picturesHelper';
 
 const FALLBACK_POSTER = 'https://loremfaces.net/96/id/1.jpg';
 
@@ -49,6 +50,67 @@ function ActorDetails() {
     load();
   }, [id]);
 
+  const [profilePicture, setProfilePicture] = useState(null);
+
+  const [coplayerPics, setCoplayerPics] = useState({});
+
+  useEffect(() => {
+    let mounted = true;
+    const fetchPic = async () => {
+      if (!actor || !actor.personId) return;
+      try {
+        const pic = await getProfilePicture(actor.personId);
+        if (!mounted) return;
+        setProfilePicture(pic ? `https://image.tmdb.org/t/p/w300_and_h450_face${pic}` : null);
+      } catch (err) {
+        if (!mounted) return;
+        console.warn('Failed to load profile picture', err);
+        setProfilePicture(null);
+      }
+    };
+    fetchPic();
+    return () => { mounted = false; };
+  }, [actor && actor.personId]);
+
+  // Fetch co-player profile pictures in bulk and store keyed by personId
+  useEffect(() => {
+    let mounted = true;
+    if (!coplayers || coplayers.length === 0) {
+      setCoplayerPics({});
+      return;
+    }
+
+    const fetchAll = async () => {
+      try {
+        const promises = coplayers.map(async (cp) => {
+          const pid = cp?.personId;
+          if (!pid) return [pid, null];
+          try {
+            const p = await getProfilePicture(pid);
+            return [pid, p ? `https://image.tmdb.org/t/p/w300_and_h450_face${p}` : null];
+          } catch (e) {
+            return [pid, null];
+          }
+        });
+
+        const entries = await Promise.all(promises);
+        if (!mounted) return;
+        const map = {};
+        for (const [k, v] of entries) {
+          if (k) map[k] = v;
+        }
+        setCoplayerPics(map);
+      } catch (err) {
+        if (!mounted) return;
+        console.warn('Failed to fetch coplayer pictures', err);
+        setCoplayerPics({});
+      }
+    };
+
+    fetchAll();
+    return () => { mounted = false; };
+  }, [coplayers]);
+
   if (loading) return (
     <>
       <div className="list-container">Loading…</div>
@@ -60,7 +122,7 @@ function ActorDetails() {
     </>
   );
 
-  const photo = actor.photo || actor.headshot || FALLBACK_POSTER;
+  const photo = profilePicture || actor.photo || actor.headshot || FALLBACK_POSTER;
 
   const fullName = `${actor.firstname || ''} ${actor.lastname || ''}`.trim();
 
@@ -70,7 +132,7 @@ function ActorDetails() {
             <div className="title-grid">
                 {/* Poster left */}
                 <aside className="poster-card">
-                    <img src={photo} alt={fullName || actor.name} className="poster-img" onError={(e)=>{e.currentTarget.src = FALLBACK_POSTER}} />
+                    <img src={photo} alt={fullName || actor.name} className="poster-img" onError={(e)=>{ if (e?.currentTarget && e.currentTarget.src !== FALLBACK_POSTER) e.currentTarget.src = FALLBACK_POSTER }} />
                 </aside>
 
                 {/* Content right */}
@@ -94,7 +156,7 @@ function ActorDetails() {
                             return (
                             <Link key={kf.id} to={`/title/${kf.id}`} className="text-decoration-none">
                                 <div className="item-card">
-                                <img src={poster} className="item-img" alt={kf.title} onError={(e)=>{e.currentTarget.src = FALLBACK_POSTER}} />
+                                <img src={poster} className="item-img" alt={kf.title} onError={(e)=>{ if (e?.currentTarget && e.currentTarget.src !== FALLBACK_POSTER) e.currentTarget.src = FALLBACK_POSTER }} />
                                 <div className="item-body">
                                     <h6 className="item-title">{kf.title}</h6>
                                 </div>
@@ -117,19 +179,21 @@ function ActorDetails() {
                     {coplayers.map((cp) => {
                     const name = cp.fullname || cp.name || `${cp.firstname || ''} ${cp.lastname || ''}`.trim();
                     const pid = cp.personId;
+                    const cpPic = pid ? (coplayerPics[pid] || null) : null;
+                    const src = cpPic || cp.photo || FALLBACK_POSTER;
                     const card = (
-                        <div className="item-card">
-                        <img src={cp.photo || FALLBACK_POSTER} className="item-img" alt={name} onError={(e)=>{e.currentTarget.src = FALLBACK_POSTER}} />
-                        <div className="item-body">
-                            <h6 className="item-title">{name}</h6>
-                            {cp.frequency && <p className="item-sub">Appeared together {cp.frequency} time(s)</p>}
-                        </div>
-                        </div>
+                      <div className="item-card">
+                      <img src={src} className="item-img" alt={name} onError={(e)=>{ if (e?.currentTarget && e.currentTarget.src !== FALLBACK_POSTER) e.currentTarget.src = FALLBACK_POSTER }} />
+                      <div className="item-body">
+                        <h6 className="item-title">{name}</h6>
+                        {cp.frequency && <p className="item-sub">Appeared together {cp.frequency} time(s)</p>}
+                      </div>
+                      </div>
                     );
                     return pid ? (
-                        <Link key={pid} to={`/actor/${pid}`} className="text-decoration-none">{card}</Link>
+                      <Link key={pid} to={`/actor/${pid}`} className="text-decoration-none">{card}</Link>
                     ) : (
-                        <div key={pid || name}>{card}</div>
+                      <div key={pid || name}>{card}</div>
                     );
                     })}
                 </div>

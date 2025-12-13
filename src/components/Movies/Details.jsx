@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-
-const FALLBACK_POSTER = 'https://picsum.dev//300/200';
+import { useMoviePoster } from '../../hooks/useMoviePoster';
+import RatingForm from './RatingForm';
+import { getProfilePicture } from '../../utils/picturesHelper';
 
 
 function TitleDetails() {
   const { id } = useParams();
   const [title, setTitle] = useState(null);
+  const [showRatingForm, setShowRatingForm] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -30,6 +32,50 @@ function TitleDetails() {
     load();
   }, [id]);
 
+  // Hook to manage the main poster with guarded fallbacks. pass title fields (may be undefined during load)
+  const { currentSrc: posterSrc, handleError: posterHandleError } = useMoviePoster(
+    title?.poster || title?.posterUrl || title?.image || null,
+    title?.poster2 || title?.backupPoster || null,
+    title?.id || title?._id || id
+  );
+
+  // local component to render actor images using the same hook
+  function ActorPoster({ actor, className = '', style = {}, alt }) {
+    const primary = actor?.photo || actor?.headshot || null;
+    const secondary = actor?.photo2 || actor?.backupPhoto || null;
+    const key = actor?.personId || actor?.id || actor?.name || null;
+    const { currentSrc, handleError } = useMoviePoster(primary, secondary, key);
+
+    const [tmdbSrc, setTmdbSrc] = useState(null);
+
+    useEffect(() => {
+      let mounted = true;
+      const load = async () => {
+        // prefer personId when available (addProfilePicture uses personId earlier)
+        const lookupKey = actor?.personId || actor?.id || actor?.name || null;
+        if (!lookupKey) return;
+        try {
+          const path = await getProfilePicture(lookupKey);
+          if (!mounted) return;
+          if (path) setTmdbSrc(`https://image.tmdb.org/t/p/w300_and_h450_face${path}`);
+        } catch (err) {
+          // ignore - fallback to currentSrc
+        }
+      };
+      load();
+      return () => { mounted = false; };
+    }, [actor?.personId, actor?.id, actor?.name]);
+
+    const src = tmdbSrc || currentSrc;
+    const onError = tmdbSrc ? () => setTmdbSrc(null) : handleError;
+
+    return (
+      <img src={src} alt={alt} className={className} style={style} onError={onError} />
+    );
+  }
+
+  // rating form moved to modular component file
+
   if (loading) return (
     <>
       <div className="title-container">Loading…</div>
@@ -41,7 +87,7 @@ function TitleDetails() {
     </>
   );
 
-  const poster = title.poster || title.posterUrl || FALLBACK_POSTER;
+  const poster = posterSrc;
   const release = title.releaseDate || title.startYear || title.year || '';
   const runtime = title.runtimeMinutes || title.runtime || null;
   const genres = (title.genre && typeof title.genre === 'string') ? title.genre.split(',').map(s=>s.trim()).filter(Boolean) : (title.genres || []);
@@ -52,13 +98,21 @@ function TitleDetails() {
       <div className="title-container">
         <div className="title-container">
           <div className="title-grid">
-            {/* Left: Poster with rating/votes below */}
+            {/* Left: Poster with rating/votes below (click score to open rating form) */}
             <aside className="poster-card">
-              <img src={poster} alt={title.title} className="poster-img" onError={(e)=>{e.currentTarget.src = FALLBACK_POSTER}} />
+              <img src={posterSrc} alt={title.title} className="poster-img" onError={posterHandleError} />
               <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', padding:'10px'}}>
-                <span className="badge">{title.rating != null ? `${title.rating.toFixed(1)} ★` : '—'}</span>
+                <button type="button" onClick={() => setShowRatingForm(s => !s)} style={{ background: 'transparent', border: 'none', color: 'inherit', cursor: 'pointer' }} aria-label="Toggle rating form">
+                  <span className="badge">{title.rating != null ? `${title.rating.toFixed(1)} ★` : '—'}</span>
+                </button>
                 <span className="badge">{title.numberOfVotes != null ? `${title.numberOfVotes.toLocaleString()} votes` : 'No votes'}</span>
               </div>
+
+              {showRatingForm && (
+                <div style={{ padding: 10 }}>
+                  <RatingForm id={id} title={title} setTitle={setTitle} onClose={() => setShowRatingForm(false)} />
+                </div>
+              )}
             </aside>
 
             {/* Right: Content */}
@@ -86,6 +140,8 @@ function TitleDetails() {
               <section className="overview" style={{marginTop:12}}>
                 <p>{plot || 'No description available.'}</p>
               </section>
+
+              
 
               {/* People rows like IMDb */}
               {title.directors && title.directors.length > 0 && (
@@ -140,10 +196,9 @@ function TitleDetails() {
                 const isString = typeof actor === 'string';
                 const actorName = isString ? actor : (actor.name || `${actor.firstname || ''} ${actor.lastname || ''}`.trim());
                 const actorId = isString ? null : actor.personId;
-                const imgSrc = (actor && actor.photo) ? actor.photo : FALLBACK_POSTER;
                 const card = (
                   <div className="item-card">
-                    <img src={imgSrc} className="item-img" alt={actorName} onError={(e)=>{e.currentTarget.src = FALLBACK_POSTER}} />
+                    <ActorPoster actor={actor} className="item-img" style={{ height: '260px', objectFit: 'cover' }} alt={actorName} />
                     <div className="item-body">
                       <h6 className="item-title">{actorName}</h6>
                     </div>
