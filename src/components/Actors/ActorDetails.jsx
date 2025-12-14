@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import TitlesList from '../Movies/TitlesList';
 import { getProfilePicture } from '../../utils/picturesHelper';
 
 const FALLBACK_POSTER = 'https://loremfaces.net/96/id/1.jpg';
@@ -139,8 +140,31 @@ function ActorDetails() {
                 <main className="title-main">
                     <h1 style={{marginTop:0, marginBottom:8}}>{fullName || actor.name || actor.personId}</h1>
                     <div className="details" style={{marginTop:0}}>
-                    {actor.birthdate && <div>Born: {actor.birthdate}</div>}
-                    {actor.deathdate && <div>Died: {actor.deathdate}</div>}
+                      {/* Birth / Death */}
+                      {actor.birthdate && <div>Born: {actor.birthdate}</div>}
+                      {actor.deathdate && <div>Died: {actor.deathdate}</div>}
+
+                      {/* Rating summary */}
+                      {(actor.averagerating || actor.Averagerating || actor.numvotes || actor.Numvotes) && (
+                        <div style={{marginTop:6}}>
+                          <span className="me-3 d-inline-flex align-items-center">
+                            <i className="bi bi-star-fill text-warning me-1" />
+                            <strong className="text-white">{(actor.averagerating ?? actor.Averagerating) || '—'}</strong>
+                          </span>
+                          <span className="text-secondary">{(actor.numvotes ?? actor.Numvotes) ? `${actor.numvotes ?? actor.Numvotes} votes` : ''}</span>
+                        </div>
+                      )}
+
+                      {/* Professions */}
+                      {((actor.professions && actor.professions.length) || (actor.Professions && actor.Professions.length)) && (
+                        <div style={{marginTop:8}}>
+                          <strong className="text-white">Professions:</strong>{' '}
+                          {((actor.professions && actor.professions.length) ? actor.professions : actor.Professions)
+                            .map(p => (p && (p.name || p.title || p)))
+                            .filter(Boolean)
+                            .join(', ')}
+                        </div>
+                      )}
                     </div>
 
                     <section className="overview" style={{marginTop:12}}>
@@ -148,24 +172,43 @@ function ActorDetails() {
                     </section>
 
                     {actor.known_for && actor.known_for.length > 0 && (
-                    <section style={{marginTop:16}}>
+                      <section style={{marginTop:16}}>
                         <h4>Known For</h4>
-                        <div className="items-grid">
-                        {actor.known_for.map((kf) => {
-                            const poster = kf.poster || FALLBACK_POSTER;
-                            return (
-                            <Link key={kf.id} to={`/title/${kf.id}`} className="text-decoration-none">
-                                <div className="item-card">
-                                <img src={poster} className="item-img" alt={kf.title} onError={(e)=>{ if (e?.currentTarget && e.currentTarget.src !== FALLBACK_POSTER) e.currentTarget.src = FALLBACK_POSTER }} />
-                                <div className="item-body">
-                                    <h6 className="item-title">{kf.title}</h6>
-                                </div>
-                                </div>
-                            </Link>
-                            );
-                        })}
+                        {/* Reuse TitlesList in compact mode to render the known_for grid */}
+                        <div style={{marginTop:8}}>
+                          <TitlesList items={actor.known_for} compact={true} />
                         </div>
-                    </section>
+                      </section>
+                    )}
+
+                    {/* Titles / Filmography */}
+                    {((actor.titles && actor.titles.length) || (actor.Titles && actor.Titles.length)) && (
+                      <section style={{marginTop:16}}>
+                        <h4>Known For:</h4>
+                        <div className="items-grid">
+                          {((actor.titles && actor.titles.length) ? actor.titles : actor.Titles).map((t) => {
+                            const tid = t.id || t.titleId || t.titleId || t._id;
+                            const tTitle = t.title || t.name || t.Title || 'Untitled';
+                            const poster = t.poster || t.posterUrl || t.image || FALLBACK_POSTER;
+                            if (!tid) {
+                              return (
+                                <div key={tTitle} className="item-card">
+                                  <img src={poster} className="item-img" alt={tTitle} onError={(e)=>{ if (e?.currentTarget && e.currentTarget.src !== FALLBACK_POSTER) e.currentTarget.src = FALLBACK_POSTER }} />
+                                  <div className="item-body"><h6 className="item-title">{tTitle}</h6></div>
+                                </div>
+                              );
+                            }
+                            return (
+                              <Link key={tid} to={`/title/${tid}`} className="text-decoration-none">
+                                <div className="item-card">
+                                  <img src={poster} className="item-img" alt={tTitle} onError={(e)=>{ if (e?.currentTarget && e.currentTarget.src !== FALLBACK_POSTER) e.currentTarget.src = FALLBACK_POSTER }} />
+                                  <div className="item-body"><h6 className="item-title">{tTitle}</h6></div>
+                                </div>
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      </section>
                     )}
                 </main>
             </div>

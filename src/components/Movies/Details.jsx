@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useMoviePoster } from '../../hooks/useMoviePoster';
 import RatingForm from './RatingForm';
-import { getProfilePicture } from '../../utils/picturesHelper';
+import { getProfilePicture, getPosterPicture } from '../../utils/picturesHelper';
 
 
 function TitleDetails() {
@@ -33,9 +33,26 @@ function TitleDetails() {
   }, [id]);
 
   // Hook to manage the main poster with guarded fallbacks. pass title fields (may be undefined during load)
+  const [fetchedPoster2, setFetchedPoster2] = useState(null);
+
+  useEffect(() => {
+    let mounted = true;
+    const fetchPicture = async () => {
+      try {
+        const second = await getPosterPicture(title?.title || title?.originalTitle || '');
+        if (!mounted) return;
+        if (second) setFetchedPoster2(`https://image.tmdb.org/t/p/w600_and_h900_face/${second}`);
+      } catch (err) {
+        // ignore
+      }
+    };
+    if (title && (title.title || title.originalTitle)) fetchPicture();
+    return () => { mounted = false; };
+  }, [title?.title, title?.originalTitle]);
+
   const { currentSrc: posterSrc, handleError: posterHandleError } = useMoviePoster(
     title?.poster || title?.posterUrl || title?.image || null,
-    title?.poster2 || title?.backupPoster || null,
+    fetchedPoster2 || title?.poster2 || title?.backupPoster || null,
     title?.id || title?._id || id
   );
 
@@ -59,7 +76,7 @@ function TitleDetails() {
           if (!mounted) return;
           if (path) setTmdbSrc(`https://image.tmdb.org/t/p/w300_and_h450_face${path}`);
         } catch (err) {
-          // ignore - fallback to currentSrc
+          
         }
       };
       load();
@@ -73,8 +90,6 @@ function TitleDetails() {
       <img src={src} alt={alt} className={className} style={style} onError={onError} />
     );
   }
-
-  // rating form moved to modular component file
 
   if (loading) return (
     <>
@@ -96,9 +111,8 @@ function TitleDetails() {
   return (
     <>
       <div className="title-container">
-        <div className="title-container">
           <div className="title-grid">
-            {/* Left: Poster with rating/votes below (click score to open rating form) */}
+
             <aside className="poster-card">
               <img src={posterSrc} alt={title.title} className="poster-img" onError={posterHandleError} />
               <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', padding:'10px'}}>
@@ -107,6 +121,15 @@ function TitleDetails() {
                 </button>
                 <span className="badge">{title.numberOfVotes != null ? `${title.numberOfVotes.toLocaleString()} votes` : 'No votes'}</span>
               </div>
+
+              <button
+                    className="btn btn-dark w-100 rounded-pill fw-bold d-flex align-items-center justify-content-center py-2 mt-auto text-primary"
+                    style={{ backgroundColor: '#2c2c2c', border: 'none', fontSize: '0.9rem' }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#3c3c3c'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = '#2c2c2c'}
+                >
+                    <i className="bi bi-plus-lg me-2"></i> Watchlist
+                </button>
 
               {showRatingForm && (
                 <div style={{ padding: 10 }}>
@@ -119,15 +142,13 @@ function TitleDetails() {
             <main className="title-main">
                 {/* Big title */}
                 <h1 style={{marginTop:0, marginBottom:8}}>{title.title}</h1>
-            
-              {/* Meta row */}
+      
               <div className="details" style={{marginTop:0}}>
                 {release && <div>{release}</div>}
                 {runtime && <div>{runtime} min</div>}
                 {title.type && <div>{title.type}</div>}
               </div>
 
-              {/* Genres as badges */}
               {genres && genres.length > 0 && (
                 <div className="badges-wrap" style={{marginTop:12}}>
                   {genres.map((g) => (
@@ -142,8 +163,6 @@ function TitleDetails() {
               </section>
 
               
-
-              {/* People rows like IMDb */}
               {title.directors && title.directors.length > 0 && (
                 <div style={{marginTop:16}}>
                   <span className="meta-small" style={{marginRight:8}}>Director</span>
@@ -183,11 +202,9 @@ function TitleDetails() {
               )}
             </main>
           </div>
-        </div>
       </div>
 
       <div className="title-container">
-        {/* Cast grid as cards */}
         <section style={{marginTop:18}}>
           <h4>Stars</h4>
           {title.actors && title.actors.length > 0 ? (
