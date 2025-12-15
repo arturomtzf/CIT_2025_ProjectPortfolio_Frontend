@@ -91,6 +91,88 @@ function TitleDetails() {
     );
   }
 
+  // Small presentational components to replace inline .map usage
+  const GenreBadges = ({ items = [] }) => {
+    if (!items || items.length === 0) return null;
+    return (
+      <div className="badges-wrap" style={{ marginTop: 12 }}>
+        {items.map((g) => (
+          <div key={g} className="badge">{g}</div>
+        ))}
+      </div>
+    );
+  };
+
+  const DirectorList = ({ directors = [] }) => {
+    if (!directors || directors.length === 0) return null;
+    return (
+      <div style={{ marginTop: 16 }}>
+        <span className="meta-small" style={{ marginRight: 8 }}>Director</span>
+        {directors.map((d, i) => {
+          const name = d.name || `${d.firstname || ''} ${d.lastname || ''}`.trim();
+          const content = d.personId ? (
+            <Link key={d.personId} to={`/actor/${d.personId}`} style={{ color: '#fff', textDecoration: 'none' }}>{name}</Link>
+          ) : (
+            <span key={name + i}>{name}</span>
+          );
+          return (
+            <span key={(d.personId || name) + '_dir'}>
+              {content}{i < directors.length - 1 ? ', ' : ''}
+            </span>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const WriterList = ({ writers = [] }) => {
+    if (!writers || writers.length === 0) return null;
+    return (
+      <div style={{ marginTop: 8 }}>
+        <span className="meta-small" style={{ marginRight: 8 }}>Writer</span>
+        {writers.map((w, i) => {
+          const name = w.name || `${w.firstname || ''} ${w.lastname || ''}`.trim();
+          const content = w.personId ? (
+            <Link key={w.personId} to={`/actor/${w.personId}`} style={{ color: '#fff', textDecoration: 'none' }}>{name}</Link>
+          ) : (
+            <span key={name + i}>{name}</span>
+          );
+          return (
+            <span key={(w.personId || name) + '_wri'}>
+              {content}{i < writers.length - 1 ? ', ' : ''}
+            </span>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const StarsGrid = ({ actors = [] }) => {
+    if (!actors || actors.length === 0) return <p>No cast information.</p>;
+    return (
+      <div className="items-grid">
+        {actors.map((actor, idx) => {
+          const isString = typeof actor === 'string';
+          const actorName = isString ? actor : (actor.name || `${actor.firstname || ''} ${actor.lastname || ''}`.trim());
+          const actorId = isString ? null : actor.personId;
+          const card = (
+            <div className="item-card">
+              <ActorPoster actor={actor} className="item-img" style={{ height: '260px', objectFit: 'cover' }} alt={actorName} />
+              <div className="item-body">
+                <h6 className="item-title">{actorName}</h6>
+              </div>
+            </div>
+          );
+          return actorId ? (
+            <Link key={actorId} to={`/actor/${actorId}`} className="text-decoration-none">{card}</Link>
+          ) : (
+            <div key={idx}>{card}</div>
+          );
+        })}
+      </div>
+    );
+  };
+
   if (loading) return (
     <>
       <div className="title-container">Loading…</div>
@@ -166,13 +248,7 @@ function TitleDetails() {
                 {title.type && <div>{title.type}</div>}
               </div>
 
-              {genres && genres.length > 0 && (
-                <div className="badges-wrap" style={{marginTop:12}}>
-                  {genres.map((g) => (
-                    <div key={g} className="badge">{g}</div>
-                  ))}
-                </div>
-              )}
+              <GenreBadges items={genres} />
 
               {/* Overview */}
               <section className="overview" style={{marginTop:12}}>
@@ -180,43 +256,9 @@ function TitleDetails() {
               </section>
 
               
-              {title.directors && title.directors.length > 0 && (
-                <div style={{marginTop:16}}>
-                  <span className="meta-small" style={{marginRight:8}}>Director</span>
-                  {title.directors.map((d, i) => {
-                    const name = d.name || `${d.firstname || ''} ${d.lastname || ''}`.trim();
-                    const content = d.personId ? (
-                      <Link key={d.personId} to={`/actor/${d.personId}`} style={{color:'#fff', textDecoration:'none'}}>{name}</Link>
-                    ) : (
-                      <span key={name + i}>{name}</span>
-                    );
-                    return (
-                      <span key={(d.personId || name) + '_dir'}>
-                        {content}{i < title.directors.length - 1 ? ', ' : ''}
-                      </span>
-                    );
-                  })}
-                </div>
-              )}
+              <DirectorList directors={title.directors} />
 
-              {title.writers && title.writers.length > 0 && (
-                <div style={{marginTop:8}}>
-                  <span className="meta-small" style={{marginRight:8}}>Writer</span>
-                  {title.writers.map((w, i) => {
-                    const name = w.name || `${w.firstname || ''} ${w.lastname || ''}`.trim();
-                    const content = w.personId ? (
-                      <Link key={w.personId} to={`/actor/${w.personId}`} style={{color:'#fff', textDecoration:'none'}}>{name}</Link>
-                    ) : (
-                      <span key={name + i}>{name}</span>
-                    );
-                    return (
-                      <span key={(w.personId || name) + '_wri'}>
-                        {content}{i < title.writers.length - 1 ? ', ' : ''}
-                      </span>
-                    );
-                  })}
-                </div>
-              )}
+              <WriterList writers={title.writers} />
             </main>
           </div>
       </div>
@@ -224,34 +266,7 @@ function TitleDetails() {
       <div className="title-container">
         <section style={{marginTop:18}}>
           <h4>Stars</h4>
-          {title.actors && title.actors.length > 0 ? (
-            <div className="items-grid">
-              {title.actors.map((actor, idx) => {
-                const isString = typeof actor === 'string';
-                const actorName = isString ? actor : (actor.name || `${actor.firstname || ''} ${actor.lastname || ''}`.trim());
-                const actorId = isString ? null : actor.personId;
-                const card = (
-                  <div className="item-card">
-                    <ActorPoster actor={actor} className="item-img" style={{ height: '260px', objectFit: 'cover' }} alt={actorName} />
-                    <div className="item-body">
-                      <h6 className="item-title">{actorName}</h6>
-                    </div>
-                  </div>
-                );
-                return actorId ? (
-                  <Link key={actorId} to={`/actor/${actorId}`} className="text-decoration-none">
-                    {card}
-                  </Link>
-                ) : (
-                  <div key={idx}>
-                    {card}
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <p>No cast information.</p>
-          )}
+          <StarsGrid actors={title.actors} />
         </section>
       </div>
     </div>

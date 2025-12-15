@@ -98,6 +98,42 @@ function TitlesList() {
     );
   }
 
+  // Small components for rendering lists
+  function MovieCard({ m }) {
+    const titleText = m?.title || m?.Title || 'Untitled';
+    const rating = m?.averageRating ?? m?.rating ?? '';
+    const id = m?.id || m?._id || m?.movieId || titleText;
+    return (
+      <Link key={id} to={`/title/${id}`} className="item-card">
+        <MoviePoster movie={m} className="item-img w-100 rounded-1" style={{ cursor: 'pointer' }} alt={titleText} />
+        <div className="item-body">
+          <div className="item-title">{titleText}</div>
+          <div className="item-sub">
+            {rating ? (
+              <div className="d-flex align-items-center" style={{ fontSize: '0.9rem' }}>
+                <i className="bi bi-star-fill text-warning me-1"></i>
+                <span className="text-white">{rating}</span>
+              </div>
+            ) : ''}
+          </div>
+        </div>
+      </Link>
+    );
+  }
+
+  function AZGrid({ items = [] }) {
+    if (!items || items.length === 0) return null;
+    return (
+      <>
+        <div className="items-grid">
+          {items.map((it) => (
+            <MovieCard key={it?.id || it?._id || it?.movieId || (it?.title || it?.Title)} m={it} />
+          ))}
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       
@@ -112,28 +148,7 @@ function TitlesList() {
               <div className="d-flex align-items-center mb-3">
                 <h4 className="text-warning fw-bold m-0">A — Z</h4>
               </div>
-              <div className="items-grid">
-                {azPageItems.map((m) => {
-                    const titleText = m?.title || m?.Title || 'Untitled';
-                    const rating = m?.averageRating ?? m?.rating ?? '';
-                    return (
-                      <Link key={m.id} to={`/title/${m.id}`} className="item-card">
-                        <MoviePoster movie={m} className="item-img w-100 rounded-1" style={{ cursor: 'pointer' }} alt={titleText} />
-                        <div className="item-body">
-                          <div className="item-title">{titleText}</div>
-                          <div className="item-sub">
-                            {rating ? (
-                              <div className="d-flex align-items-center" style={{ fontSize: '0.9rem' }}>
-                                <i className="bi bi-star-fill text-warning me-1"></i>
-                                <span className="text-white">{rating}</span>
-                              </div>
-                            ) : ''}
-                          </div>
-                        </div>
-                      </Link>
-                    );
-                  })}
-              </div>
+              <AZGrid items={azPageItems} />
               <Pagination page={azPage} onChange={setAzPage} hasNext={azPage < azTotalPages} totalPages={azTotalPages} />
             </section>
           </>
