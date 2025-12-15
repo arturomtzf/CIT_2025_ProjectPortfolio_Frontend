@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import TitlesList from '../Movies/TitlesList';
 import { getProfilePicture } from '../../utils/picturesHelper';
 
 const FALLBACK_POSTER = 'https://loremfaces.net/96/id/1.jpg';
@@ -127,6 +126,98 @@ function ActorDetails() {
 
   const fullName = `${actor.firstname || ''} ${actor.lastname || ''}`.trim();
 
+  // Presentational components
+  const ProfessionList = ({ items = [] }) => {
+    const list = (items || []).map(p => (p && (p.name || p.title || p))).filter(Boolean);
+    if (!list || list.length === 0) return null;
+    return (
+      <div style={{marginTop:8}}>
+        <strong className="text-white">Professions:</strong>{' '}
+        {list.join(', ')}
+      </div>
+    );
+  };
+
+  const KnownForGrid = ({ items = [] }) => {
+    if (!items || items.length === 0) return null;
+    return (
+      <section style={{marginTop:16}}>
+        <h4>Known For</h4>
+        <div className="items-grid">
+          {items.map((kf) => {
+            const poster = kf.poster || FALLBACK_POSTER;
+            const key = kf.id || kf._id || kf.title || poster;
+            return (
+              <Link key={key} to={`/title/${kf.id}`} className="text-decoration-none">
+                <div className="item-card">
+                  <img src={poster} className="item-img" alt={kf.title} onError={(e)=>{ if (e?.currentTarget && e.currentTarget.src !== FALLBACK_POSTER) e.currentTarget.src = FALLBACK_POSTER }} />
+                  <div className="item-body"><h6 className="item-title">{kf.title}</h6></div>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+    );
+  };
+
+  const FilmographyGrid = ({ items = [] }) => {
+    if (!items || items.length === 0) return null;
+    return (
+      <section style={{marginTop:16}}>
+        <h4>Known For:</h4>
+        <div className="items-grid">
+          {items.map((t) => {
+            const tid = t.id || t.titleId || t._id || null;
+            const tTitle = t.title || t.name || t.Title || 'Untitled';
+            const poster = t.poster || t.posterUrl || t.image || FALLBACK_POSTER;
+            const key = tid || tTitle;
+            const card = (
+              <div key={key} className="item-card">
+                <img src={poster} className="item-img" alt={tTitle} onError={(e)=>{ if (e?.currentTarget && e.currentTarget.src !== FALLBACK_POSTER) e.currentTarget.src = FALLBACK_POSTER }} />
+                <div className="item-body"><h6 className="item-title">{tTitle}</h6></div>
+              </div>
+            );
+            return tid ? (
+              <Link key={key} to={`/title/${tid}`} className="text-decoration-none">{card}</Link>
+            ) : card;
+          })}
+        </div>
+      </section>
+    );
+  };
+
+  const CoPlayersGrid = ({ items = [], pics = {} }) => {
+    if (!items || items.length === 0) return null;
+    return (
+      <section style={{marginTop:16}}>
+        <h4>Co-Players</h4>
+        <div className="items-grid">
+          {items.map((cp) => {
+            const name = cp.fullname || cp.name || `${cp.firstname || ''} ${cp.lastname || ''}`.trim();
+            const pid = cp.personId;
+            const cpPic = pid ? (pics[pid] || null) : null;
+            const src = cpPic || cp.photo || FALLBACK_POSTER;
+            const card = (
+              <div className="item-card">
+                <img src={src} className="item-img" alt={name} onError={(e)=>{ if (e?.currentTarget && e.currentTarget.src !== FALLBACK_POSTER) e.currentTarget.src = FALLBACK_POSTER }} />
+                <div className="item-body">
+                  <h6 className="item-title">{name}</h6>
+                  {cp.frequency && <p className="item-sub">Appeared together {cp.frequency} time(s)</p>}
+                </div>
+              </div>
+            );
+            return pid ? (
+              <Link key={pid} to={`/actor/${pid}`} className="text-decoration-none">{card}</Link>
+            ) : (
+              <div key={pid || name}>{card}</div>
+            );
+          })}
+        </div>
+      </section>
+    );
+  };
+
   return (
     <>
         <div className="title-container">
@@ -156,92 +247,23 @@ function ActorDetails() {
                       )}
 
                       {/* Professions */}
-                      {((actor.professions && actor.professions.length) || (actor.Professions && actor.Professions.length)) && (
-                        <div style={{marginTop:8}}>
-                          <strong className="text-white">Professions:</strong>{' '}
-                          {((actor.professions && actor.professions.length) ? actor.professions : actor.Professions)
-                            .map(p => (p && (p.name || p.title || p)))
-                            .filter(Boolean)
-                            .join(', ')}
-                        </div>
-                      )}
+                      <ProfessionList items={((actor.professions && actor.professions.length) ? actor.professions : actor.Professions)} />
                     </div>
 
                     <section className="overview" style={{marginTop:12}}>
                     <p>{actor.biography || actor.bio || 'No biography available.'}</p>
                     </section>
 
-                    {actor.known_for && actor.known_for.length > 0 && (
-                      <section style={{marginTop:16}}>
-                        <h4>Known For</h4>
-                        {/* Reuse TitlesList in compact mode to render the known_for grid */}
-                        <div style={{marginTop:8}}>
-                          <TitlesList items={actor.known_for} compact={true} />
-                        </div>
-                      </section>
-                    )}
+                    <KnownForGrid items={actor.known_for} />
 
                     {/* Titles / Filmography */}
-                    {((actor.titles && actor.titles.length) || (actor.Titles && actor.Titles.length)) && (
-                      <section style={{marginTop:16}}>
-                        <h4>Known For:</h4>
-                        <div className="items-grid">
-                          {((actor.titles && actor.titles.length) ? actor.titles : actor.Titles).map((t) => {
-                            const tid = t.id || t.titleId || t.titleId || t._id;
-                            const tTitle = t.title || t.name || t.Title || 'Untitled';
-                            const poster = t.poster || t.posterUrl || t.image || FALLBACK_POSTER;
-                            if (!tid) {
-                              return (
-                                <div key={tTitle} className="item-card">
-                                  <img src={poster} className="item-img" alt={tTitle} onError={(e)=>{ if (e?.currentTarget && e.currentTarget.src !== FALLBACK_POSTER) e.currentTarget.src = FALLBACK_POSTER }} />
-                                  <div className="item-body"><h6 className="item-title">{tTitle}</h6></div>
-                                </div>
-                              );
-                            }
-                            return (
-                              <Link key={tid} to={`/title/${tid}`} className="text-decoration-none">
-                                <div className="item-card">
-                                  <img src={poster} className="item-img" alt={tTitle} onError={(e)=>{ if (e?.currentTarget && e.currentTarget.src !== FALLBACK_POSTER) e.currentTarget.src = FALLBACK_POSTER }} />
-                                  <div className="item-body"><h6 className="item-title">{tTitle}</h6></div>
-                                </div>
-                              </Link>
-                            );
-                          })}
-                        </div>
-                      </section>
-                    )}
+                    <FilmographyGrid items={((actor.titles && actor.titles.length) ? actor.titles : actor.Titles)} />
                 </main>
             </div>
         </div>
 
         <div className="title-container">
-                {coplayers.length > 0 && (
-                <section style={{marginTop:16}}>
-                <h4>Co-Players</h4>
-                <div className="items-grid">
-                    {coplayers.map((cp) => {
-                    const name = cp.fullname || cp.name || `${cp.firstname || ''} ${cp.lastname || ''}`.trim();
-                    const pid = cp.personId;
-                    const cpPic = pid ? (coplayerPics[pid] || null) : null;
-                    const src = cpPic || cp.photo || FALLBACK_POSTER;
-                    const card = (
-                      <div className="item-card">
-                      <img src={src} className="item-img" alt={name} onError={(e)=>{ if (e?.currentTarget && e.currentTarget.src !== FALLBACK_POSTER) e.currentTarget.src = FALLBACK_POSTER }} />
-                      <div className="item-body">
-                        <h6 className="item-title">{name}</h6>
-                        {cp.frequency && <p className="item-sub">Appeared together {cp.frequency} time(s)</p>}
-                      </div>
-                      </div>
-                    );
-                    return pid ? (
-                      <Link key={pid} to={`/actor/${pid}`} className="text-decoration-none">{card}</Link>
-                    ) : (
-                      <div key={pid || name}>{card}</div>
-                    );
-                    })}
-                </div>
-                </section>
-            )}
+          <CoPlayersGrid items={coplayers} pics={coplayerPics} />
         </div>
     </>
   );
