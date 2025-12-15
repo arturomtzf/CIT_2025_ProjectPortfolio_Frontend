@@ -1,10 +1,9 @@
 import { useState } from "react";
-import { data, useNavigate } from "react-router-dom";
+import Alert from "react-bootstrap/Alert";
 
 export default function RegisterForm() {
 
     const API_URL = import.meta.env.VITE_API_URL
-
     const [formData, setFormData] = useState({
         firstName: "",
         lastName: "",
@@ -15,34 +14,42 @@ export default function RegisterForm() {
 
     const [isRegistering, setIsRegistering] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
+    const [showSuccess, setShowSuccess] = useState(false)
 
     
     const handleRegister = async (e) => {
         e.preventDefault();
+        setIsRegistering(true);
+        
         try {
             const res = await fetch(`${API_URL}/auth`, {
         method: "POST",
         headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({
-            firstName: formData.firstName,
-            lastName: formData.lastName,
-            email: formData.email,
-            username: formData.username,
-            password: formData.password
-        })
+        body: JSON.stringify(formData)
     });
         
         
     if(res.ok) {
-        alert("Registered successfully!")
+        setShowSuccess(true)
+        setErrorMessage("")
+        setFormData({
+            firstName: "",
+            lastName: "",
+            email:"",
+            username:"",
+            password:""
+        })
+        
 
     }
     else {
         const msg = await res.text();
         setErrorMessage(msg || "Something went wrong");
+        setShowSuccess(false)
     }
     } catch (err) {
             setErrorMessage(err.message);
+            setShowSuccess(false);
         } finally {
             setIsRegistering(false);
         }
@@ -56,8 +63,16 @@ export default function RegisterForm() {
         style={{maxWidth:"380px"}} 
         onSubmit={handleRegister}
         >
-        
-        {errorMessage && <p className="text-danger small mb-3">{errorMessage}</p>}
+        {showSuccess && (<Alert variant= "success" onClose={() => setShowSuccess(false)} dismissible>
+            <Alert.Heading>Registered successfully!</Alert.Heading>
+            <p>Your account has been created</p>
+        </Alert>)}
+        {errorMessage && (
+                <Alert variant="danger" onClose={() => setErrorMessage("")} dismissible>
+                    {errorMessage}
+                </Alert>
+            )}
+
         <div className="mb-3">
             <input
                 type="text"

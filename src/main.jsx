@@ -15,6 +15,7 @@ import Register from './screens/Register.jsx';
 import Watchlist from './screens/Watchlist.jsx';
 import YourActivity from './screens/YourActivity.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
+import BookmarkedActors from './screens/BookmarkedActors.jsx';
 
 const router = createBrowserRouter([
   { path: '/', element: <Home /> },
@@ -37,6 +38,7 @@ const router = createBrowserRouter([
         <YourActivity />
       </ProtectedRoute>)
   },
+  {path: '/bookmarked-actors', element: <BookmarkedActors />},
   { path: '*', element: <NotFound /> }
 ]);
 
