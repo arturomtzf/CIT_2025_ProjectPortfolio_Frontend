@@ -109,9 +109,26 @@ function TitleDetails() {
   const plot = title.plot || title.overview || title.description || '';
 
   return (
-    <>
-      <div className="title-container">
-          <div className="title-grid">
+    <div className="title-details-page" style={{ position: 'relative', minHeight: '100vh' }}>
+
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        <div className="title-container" style={{ position: 'relative', overflow: 'hidden' }}>
+          <div
+            aria-hidden
+            style={{
+              position: 'absolute',
+              inset: 0,
+              backgroundImage: posterSrc ? `url(${posterSrc})` : 'none',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
+              filter: 'blur(20px) brightness(0.35)',
+              transform: 'scale(1.03)',
+              zIndex: 0,
+              pointerEvents: 'none'
+            }}
+          />
+          <div className="title-grid" style={{ position: 'relative', zIndex: 1 }}>
 
             <aside className="poster-card">
               <img src={posterSrc} alt={title.title} className="poster-img" onError={posterHandleError} />
@@ -237,7 +254,8 @@ function TitleDetails() {
           )}
         </section>
       </div>
-    </>
+    </div>
+    </div>
   );
 }
 
