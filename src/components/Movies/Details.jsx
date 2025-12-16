@@ -1,34 +1,36 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useMoviePoster } from '../../hooks/useMoviePoster';
-import RatingForm from './RatingForm';
 import { getProfilePicture, getPosterPicture } from '../../utils/picturesHelper';
-
+import RatingModal from "../Rating/RatingModal";
 
 function TitleDetails() {
   const { id } = useParams();
   const [title, setTitle] = useState(null);
-  const [showRatingForm, setShowRatingForm] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [showRatingModal, setShowRatingModal] = useState(false);
+
+  const handleClose = () => setShowRatingModal(false);
+  const handleShow = () => setShowRatingModal(true);
+
+  const load = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch(`/api/movies/${id}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setTitle(data);
+    } catch (err) {
+      console.error(err);
+      setError(err.message || 'Failed to load title');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const load = async () => {
-      setLoading(true);
-      setError("");
-      try {
-        const res = await fetch(`/api/movies/${id}`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        setTitle(data);
-      } catch (err) {
-        console.error(err);
-        setError(err.message || 'Failed to load title');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     load();
   }, [id]);
 
@@ -76,7 +78,7 @@ function TitleDetails() {
           if (!mounted) return;
           if (path) setTmdbSrc(`https://image.tmdb.org/t/p/w300_and_h450_face${path}`);
         } catch (err) {
-          
+
         }
       };
       load();
@@ -187,7 +189,7 @@ function TitleDetails() {
   const poster = posterSrc;
   const release = title.releaseDate || title.startYear || title.year || '';
   const runtime = title.runtimeMinutes || title.runtime || null;
-  const genres = (title.genre && typeof title.genre === 'string') ? title.genre.split(',').map(s=>s.trim()).filter(Boolean) : (title.genres || []);
+  const genres = (title.genre && typeof title.genre === 'string') ? title.genre.split(',').map(s => s.trim()).filter(Boolean) : (title.genres || []);
   const plot = title.plot || title.overview || title.description || '';
 
   return (
@@ -214,35 +216,41 @@ function TitleDetails() {
 
             <aside className="poster-card">
               <img src={posterSrc} alt={title.title} className="poster-img" onError={posterHandleError} />
-              <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', padding:'10px'}}>
-                <button type="button" onClick={() => setShowRatingForm(s => !s)} style={{ background: 'transparent', border: 'none', color: 'inherit', cursor: 'pointer' }} aria-label="Toggle rating form">
-                  <span className="badge">{title.rating != null ? `${title.rating.toFixed(1)} ★` : '—'}</span>
-                </button>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px' }}>
+                <span className="badge">{title.rating != null ? `${title.rating.toFixed(1)} ★` : '—'}</span>
                 <span className="badge">{title.numberOfVotes != null ? `${title.numberOfVotes.toLocaleString()} votes` : 'No votes'}</span>
               </div>
 
+              {/* Watchlist button */}
               <button
-                    className="btn btn-dark w-100 rounded-pill fw-bold d-flex align-items-center justify-content-center py-2 mt-auto text-primary"
-                    style={{ backgroundColor: '#2c2c2c', border: 'none', fontSize: '0.9rem' }}
-                    onMouseEnter={(e) => e.target.style.backgroundColor = '#3c3c3c'}
-                    onMouseLeave={(e) => e.target.style.backgroundColor = '#2c2c2c'}
-                >
-                    <i className="bi bi-plus-lg me-2"></i> Watchlist
-                </button>
+                className="btn btn-dark w-100 rounded-pill fw-bold d-flex align-items-center justify-content-center py-2 mt-auto text-primary"
+                style={{ backgroundColor: '#2c2c2c', border: 'none', fontSize: '0.9rem', marginBottom: '10px' }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#3c3c3c'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = '#2c2c2c'}
+                // onClick={handleBookmark}
+              >
+                <i className="bi bi-plus-lg me-2"></i> Watchlist
+              </button>
 
-              {showRatingForm && (
-                <div style={{ padding: 10 }}>
-                  <RatingForm id={id} title={title} setTitle={setTitle} onClose={() => setShowRatingForm(false)} />
-                </div>
-              )}
+              {/* Rate button */}
+              <button
+                className="btn btn-dark w-100 rounded-pill fw-bold d-flex align-items-center justify-content-center py-2 mt-auto text-primary"
+                style={{ backgroundColor: '#2c2c2c', border: 'none', fontSize: '0.9rem' }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#3c3c3c'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = '#2c2c2c'}
+                onClick={handleShow}
+              >
+                <i className="bi bi-star-fill me-2"></i> Rate
+              </button>
+
             </aside>
 
             {/* Right: Content */}
             <main className="title-main">
-                {/* Big title */}
-                <h1 style={{marginTop:0, marginBottom:8}}>{title.title}</h1>
-      
-              <div className="details" style={{marginTop:0}}>
+              {/* Big title */}
+              <h1 style={{ marginTop: 0, marginBottom: 8 }}>{title.title}</h1>
+
+              <div className="details" style={{ marginTop: 0 }}>
                 {release && <div>{release}</div>}
                 {runtime && <div>{runtime} min</div>}
                 {title.type && <div>{title.type}</div>}
@@ -251,25 +259,31 @@ function TitleDetails() {
               <GenreBadges items={genres} />
 
               {/* Overview */}
-              <section className="overview" style={{marginTop:12}}>
+              <section className="overview" style={{ marginTop: 12 }}>
                 <p>{plot || 'No description available.'}</p>
               </section>
 
-              
+
               <DirectorList directors={title.directors} />
 
               <WriterList writers={title.writers} />
             </main>
           </div>
-      </div>
+        </div>
 
-      <div className="title-container">
-        <section style={{marginTop:18}}>
-          <h4>Stars</h4>
-          <StarsGrid actors={title.actors} />
-        </section>
+        <div className="title-container">
+          <section style={{ marginTop: 18 }}>
+            <h4>Stars</h4>
+            <StarsGrid actors={title.actors} />
+          </section>
+        </div>
       </div>
-    </div>
+      <RatingModal
+        show={showRatingModal}
+        handleClose={handleClose}
+        titleid={id} 
+        load={load}
+        />
     </div>
   );
 }
