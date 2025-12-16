@@ -40,30 +40,30 @@ export default function ToppicksSection({ title = 'Top Picks', pageSize = 8 }) {
     // MoviePoster inner component
     function MoviePoster({ movie, className = '', style = {}, alt }) {
         const [fetchedPoster2, setFetchedPoster2] = useState(null);
-        const primary = movie?.poster || movie?.Poster || movie?.posterUrl || movie?.image || null;
-        const secondary = movie?.poster2 || movie?.backupPoster || null;
-        const idKey = movie?.id || movie?._id || movie?.movieId || null;
+        const primary = movie?.poster || null;
+        const secondary = null;
+        const idKey = movie?.titleid || null;
 
         useEffect(() => {
             let mounted = true;
             const fetchPicture = async () => {
                 try {
-                    const second = await getPosterPicture(movie?.title || movie?.Title || '');
+                    const second = await getPosterPicture(movie?.title || '');
                     if (!mounted) return;
                     if (second) setFetchedPoster2('https://image.tmdb.org/t/p/w600_and_h900_face/' + second);
                 } catch (err) {
                     // ignore
                 }
             };
-            fetchPicture();
+            if (movie?.title) fetchPicture();
             return () => { mounted = false; };
-        }, [movie?.title, movie?.Title]);
+        }, [movie?.title]);
 
         const { currentSrc, handleError } = useMoviePoster(primary, fetchedPoster2 || secondary, idKey);
         return (
             <img
                 src={currentSrc}
-                alt={alt || (movie?.title || movie?.Title || 'poster')}
+                alt={alt || (movie?.title || 'poster')}
                 className={className}
                 style={style}
                 onError={handleError}

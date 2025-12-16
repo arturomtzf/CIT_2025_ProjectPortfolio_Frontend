@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { getProfilePicture } from '../../utils/picturesHelper';
 import KnownForGrid from './KnownForGrid';
 import CoPlayersGrid from './CoPlayersGrid';
 import Pagination from '../Pagination/Pagination';
-
-const FALLBACK_POSTER = 'https://loremfaces.net/96/id/1.jpg';
+import ProfessionList from './ProfessionListItem';
 
 function ActorDetails() {
   const { id } = useParams();
@@ -122,34 +121,22 @@ function ActorDetails() {
 
   if (loading) return (
     <>
-      <div className="list-container">Loading…</div>
+      <div className="title-container">Loading…</div>
     </>
   );
   if (error) return (
     <>
-      <div className="list-container">Error: {error}</div>
+      <div className="title-container">Error: {error}</div>
     </>
   );
 
-  const photo = profilePicture || actor.photo || actor.headshot || FALLBACK_POSTER;
+  const photo = profilePicture || actor.photo || actor.headshot || 'https://loremfaces.net/96/id/1.jpg';
 
   const fullName = `${actor.firstname || ''} ${actor.lastname || ''}`.trim();
 
   const knownForItems = (actor && Array.isArray(actor.known_for) && actor.known_for.length)
     ? actor.known_for
     : (actor && Array.isArray(actor.titles) && actor.titles.length ? actor.titles : []);
-
-  // Presentational components
-  const ProfessionList = ({ items = [] }) => {
-    const list = (items || []).map(p => (p && (p.name || p.title || p))).filter(Boolean);
-    if (!list || list.length === 0) return null;
-    return (
-      <div style={{marginTop:8}}>
-        <strong className="text-white">Professions:</strong>{' '}
-        {list.join(', ')}
-      </div>
-    );
-  };
 
   return (
     <>
@@ -161,7 +148,6 @@ function ActorDetails() {
               src={photo}
               alt={fullName || actor.name}
               className="poster-img"
-              onError={(e) => { if (e?.currentTarget && e.currentTarget.src !== FALLBACK_POSTER) e.currentTarget.src = FALLBACK_POSTER }}
             />
           </aside>
 
@@ -170,14 +156,13 @@ function ActorDetails() {
             <h1 style={{ marginTop: 0, marginBottom: 8 }}>{fullName || actor.name || actor.personId}</h1>
             <div className="details" style={{ marginTop: 0 }}>
               {/* Birth / Death */}
-              {actor.personId && <div>ID: {actor.personId}</div>}
               {actor.birthdate && <div>Born: {actor.birthdate}</div>}
               {actor.deathdate && <div>Died: {actor.deathdate}</div>}
-
-              {/* Professions */}
-              <ProfessionList items={((actor.professions && actor.professions.length) ? actor.professions : actor.Professions)} />
             </div>
 
+            {/* Professions */}
+              <ProfessionList items={((actor.professions && actor.professions.length) ? actor.professions : actor.Professions)} />
+            
           </main>
         </div>
       </div>
@@ -193,7 +178,6 @@ function ActorDetails() {
 
         {coplayers && coplayers.length > 0 && (
           <div>
-            <div style={{ textAlign: 'center', marginTop: 8, color: 'rgba(255,255,255,0.9)' }}>{coplayers.length} co-player(s)</div>
             {Math.ceil(coplayers.length / CP_PAGE_SIZE) > 1 && (
               <Pagination
                 page={cpPage}
@@ -211,6 +195,3 @@ function ActorDetails() {
 
 
 export default ActorDetails;
-
-
-  

@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import SidebarSection from "./SidebarSection";
+import { FALLBACK_POSTER } from '../../utils/constants';
+
 export default function BookmarkActorsSection() {
     const API_URL = import.meta.env.VITE_API_URL;
-    const FALLBACK_POSTER = 'https://loremfaces.net/96/id/1.jpg';
     const TRASH_CAN = 'https://img.icons8.com/fluent-systems-regular/512/FA5252/trash.png'
 
     const [actors, setActors] = useState([]);
@@ -93,8 +94,8 @@ export default function BookmarkActorsSection() {
 
                         <div className="d-flex flex-column mt-4" style={{ gap: "1.5rem" }}>
                             {actors.map((item) => {
-                                const name = `${item.firstName || ''} ${item.lastname || ''}`.trim()
-                                const poster = item.poster || FALLBACK_POSTER
+                                const name = `${item.firstname || ''} ${item.lastname || ''}`.trim()
+                                const poster = item.photo || FALLBACK_POSTER
 
                                 return (
                                     <div key={item.personid || ''}
