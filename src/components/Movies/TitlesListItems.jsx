@@ -58,19 +58,6 @@ export function MovieCard({ m }) {
   );
 }
 
-export function AZGrid({ items = [] }) {
-  if (!items || items.length === 0) return null;
-  return (
-    <>
-      <div className="items-grid">
-        {items.map((it) => (
-          <MovieCard key={it?.id || it?._id || it?.movieId || (it?.title || it?.Title)} m={it} />
-        ))}
-      </div>
-    </>
-  );
-}
-
 export function ExploreGrid({ items = [] }) {
   if (!items || items.length === 0) return null;
   return (
