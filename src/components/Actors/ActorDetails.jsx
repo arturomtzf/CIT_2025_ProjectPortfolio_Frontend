@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import TitlesList from '../Movies/TitlesList';
 import { getProfilePicture } from '../../utils/picturesHelper';
+import KnownForGrid from './KnownForGrid';
+import CoPlayersGrid from './CoPlayersGrid';
+import Pagination from '../Pagination/Pagination';
 
 const FALLBACK_POSTER = 'https://loremfaces.net/96/id/1.jpg';
 
@@ -11,6 +13,8 @@ function ActorDetails() {
   const [coplayers, setCoplayers] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [cpPage, setCpPage] = useState(1);
+  const CP_PAGE_SIZE = 12;
 
   useEffect(() => {
     const load = async () => {
@@ -52,7 +56,6 @@ function ActorDetails() {
   }, [id]);
 
   const [profilePicture, setProfilePicture] = useState(null);
-
   const [coplayerPics, setCoplayerPics] = useState({});
 
   useEffect(() => {
@@ -112,6 +115,11 @@ function ActorDetails() {
     return () => { mounted = false; };
   }, [coplayers]);
 
+  // reset co-player page when the coplayers list changes
+  useEffect(() => {
+    setCpPage(1);
+  }, [coplayers]);
+
   if (loading) return (
     <>
       <div className="list-container">Loading…</div>
@@ -127,125 +135,80 @@ function ActorDetails() {
 
   const fullName = `${actor.firstname || ''} ${actor.lastname || ''}`.trim();
 
+  const knownForItems = (actor && Array.isArray(actor.known_for) && actor.known_for.length)
+    ? actor.known_for
+    : (actor && Array.isArray(actor.titles) && actor.titles.length ? actor.titles : []);
+
+  // Presentational components
+  const ProfessionList = ({ items = [] }) => {
+    const list = (items || []).map(p => (p && (p.name || p.title || p))).filter(Boolean);
+    if (!list || list.length === 0) return null;
+    return (
+      <div style={{marginTop:8}}>
+        <strong className="text-white">Professions:</strong>{' '}
+        {list.join(', ')}
+      </div>
+    );
+  };
+
   return (
     <>
-        <div className="title-container">
-            <div className="title-grid">
-                {/* Poster left */}
-                <aside className="poster-card">
-                    <img src={photo} alt={fullName || actor.name} className="poster-img" onError={(e)=>{ if (e?.currentTarget && e.currentTarget.src !== FALLBACK_POSTER) e.currentTarget.src = FALLBACK_POSTER }} />
-                </aside>
+      <div className="title-container">
+        <div className="title-grid">
+          {/* Poster left */}
+          <aside className="poster-card">
+            <img
+              src={photo}
+              alt={fullName || actor.name}
+              className="poster-img"
+              onError={(e) => { if (e?.currentTarget && e.currentTarget.src !== FALLBACK_POSTER) e.currentTarget.src = FALLBACK_POSTER }}
+            />
+          </aside>
 
-                {/* Content right */}
-                <main className="title-main">
-                    <h1 style={{marginTop:0, marginBottom:8}}>{fullName || actor.name || actor.personId}</h1>
-                    <div className="details" style={{marginTop:0}}>
-                      {/* Birth / Death */}
-                      {actor.birthdate && <div>Born: {actor.birthdate}</div>}
-                      {actor.deathdate && <div>Died: {actor.deathdate}</div>}
+          {/* Content right */}
+          <main className="title-main">
+            <h1 style={{ marginTop: 0, marginBottom: 8 }}>{fullName || actor.name || actor.personId}</h1>
+            <div className="details" style={{ marginTop: 0 }}>
+              {/* Birth / Death */}
+              {actor.personId && <div>ID: {actor.personId}</div>}
+              {actor.birthdate && <div>Born: {actor.birthdate}</div>}
+              {actor.deathdate && <div>Died: {actor.deathdate}</div>}
 
-                      {/* Rating summary */}
-                      {(actor.averagerating || actor.Averagerating || actor.numvotes || actor.Numvotes) && (
-                        <div style={{marginTop:6}}>
-                          <span className="me-3 d-inline-flex align-items-center">
-                            <i className="bi bi-star-fill text-warning me-1" />
-                            <strong className="text-white">{(actor.averagerating ?? actor.Averagerating) || '—'}</strong>
-                          </span>
-                          <span className="text-secondary">{(actor.numvotes ?? actor.Numvotes) ? `${actor.numvotes ?? actor.Numvotes} votes` : ''}</span>
-                        </div>
-                      )}
-
-                      {/* Professions */}
-                      {((actor.professions && actor.professions.length) || (actor.Professions && actor.Professions.length)) && (
-                        <div style={{marginTop:8}}>
-                          <strong className="text-white">Professions:</strong>{' '}
-                          {((actor.professions && actor.professions.length) ? actor.professions : actor.Professions)
-                            .map(p => (p && (p.name || p.title || p)))
-                            .filter(Boolean)
-                            .join(', ')}
-                        </div>
-                      )}
-                    </div>
-
-                    <section className="overview" style={{marginTop:12}}>
-                    <p>{actor.biography || actor.bio || 'No biography available.'}</p>
-                    </section>
-
-                    {actor.known_for && actor.known_for.length > 0 && (
-                      <section style={{marginTop:16}}>
-                        <h4>Known For</h4>
-                        {/* Reuse TitlesList in compact mode to render the known_for grid */}
-                        <div style={{marginTop:8}}>
-                          <TitlesList items={actor.known_for} compact={true} />
-                        </div>
-                      </section>
-                    )}
-
-                    {/* Titles / Filmography */}
-                    {((actor.titles && actor.titles.length) || (actor.Titles && actor.Titles.length)) && (
-                      <section style={{marginTop:16}}>
-                        <h4>Known For:</h4>
-                        <div className="items-grid">
-                          {((actor.titles && actor.titles.length) ? actor.titles : actor.Titles).map((t) => {
-                            const tid = t.id || t.titleId || t.titleId || t._id;
-                            const tTitle = t.title || t.name || t.Title || 'Untitled';
-                            const poster = t.poster || t.posterUrl || t.image || FALLBACK_POSTER;
-                            if (!tid) {
-                              return (
-                                <div key={tTitle} className="item-card">
-                                  <img src={poster} className="item-img" alt={tTitle} onError={(e)=>{ if (e?.currentTarget && e.currentTarget.src !== FALLBACK_POSTER) e.currentTarget.src = FALLBACK_POSTER }} />
-                                  <div className="item-body"><h6 className="item-title">{tTitle}</h6></div>
-                                </div>
-                              );
-                            }
-                            return (
-                              <Link key={tid} to={`/title/${tid}`} className="text-decoration-none">
-                                <div className="item-card">
-                                  <img src={poster} className="item-img" alt={tTitle} onError={(e)=>{ if (e?.currentTarget && e.currentTarget.src !== FALLBACK_POSTER) e.currentTarget.src = FALLBACK_POSTER }} />
-                                  <div className="item-body"><h6 className="item-title">{tTitle}</h6></div>
-                                </div>
-                              </Link>
-                            );
-                          })}
-                        </div>
-                      </section>
-                    )}
-                </main>
+              {/* Professions */}
+              <ProfessionList items={((actor.professions && actor.professions.length) ? actor.professions : actor.Professions)} />
             </div>
-        </div>
 
-        <div className="title-container">
-                {coplayers.length > 0 && (
-                <section style={{marginTop:16}}>
-                <h4>Co-Players</h4>
-                <div className="items-grid">
-                    {coplayers.map((cp) => {
-                    const name = cp.fullname || cp.name || `${cp.firstname || ''} ${cp.lastname || ''}`.trim();
-                    const pid = cp.personId;
-                    const cpPic = pid ? (coplayerPics[pid] || null) : null;
-                    const src = cpPic || cp.photo || FALLBACK_POSTER;
-                    const card = (
-                      <div className="item-card">
-                      <img src={src} className="item-img" alt={name} onError={(e)=>{ if (e?.currentTarget && e.currentTarget.src !== FALLBACK_POSTER) e.currentTarget.src = FALLBACK_POSTER }} />
-                      <div className="item-body">
-                        <h6 className="item-title">{name}</h6>
-                        {cp.frequency && <p className="item-sub">Appeared together {cp.frequency} time(s)</p>}
-                      </div>
-                      </div>
-                    );
-                    return pid ? (
-                      <Link key={pid} to={`/actor/${pid}`} className="text-decoration-none">{card}</Link>
-                    ) : (
-                      <div key={pid || name}>{card}</div>
-                    );
-                    })}
-                </div>
-                </section>
-            )}
+          </main>
         </div>
+      </div>
+
+      {knownForItems && knownForItems.length > 0 && (
+        <div className="title-container">
+          <KnownForGrid items={knownForItems} label="Known For" />
+        </div>
+      )}
+
+      <div className="title-container">
+        <CoPlayersGrid items={coplayers.slice((cpPage - 1) * CP_PAGE_SIZE, cpPage * CP_PAGE_SIZE)} pics={coplayerPics} />
+
+        {coplayers && coplayers.length > 0 && (
+          <div>
+            <div style={{ textAlign: 'center', marginTop: 8, color: 'rgba(255,255,255,0.9)' }}>{coplayers.length} co-player(s)</div>
+            {Math.ceil(coplayers.length / CP_PAGE_SIZE) > 1 && (
+              <Pagination
+                page={cpPage}
+                onChange={(p) => setCpPage(p)}
+                hasNext={cpPage < Math.ceil(coplayers.length / CP_PAGE_SIZE)}
+                totalPages={Math.ceil(coplayers.length / CP_PAGE_SIZE)}
+              />
+            )}
+          </div>
+        )}
+      </div>
     </>
   );
 }
+
 
 export default ActorDetails;
 
