@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-
-const FALLBACK_POSTER = 'https://loremfaces.net/96/id/1.jpg';
+import { FALLBACK_POSTER } from '../../utils/constants';
 
 export default function CoPlayersGrid({ items = [], pics = {} }) {
   if (!items || items.length === 0) return null;
@@ -16,11 +15,7 @@ export default function CoPlayersGrid({ items = [], pics = {} }) {
           const src = cpPic || cp.photo || FALLBACK_POSTER;
           const card = (
             <div className="item-card">
-              <img
-                src={src}
-                className="item-img"
-                alt={name}
-                onError={(e) => {
+              <img src={src} className="item-img" alt={name} onError={(e) => {
                   if (e?.currentTarget && e.currentTarget.src !== FALLBACK_POSTER)
                     e.currentTarget.src = FALLBACK_POSTER;
                 }}
