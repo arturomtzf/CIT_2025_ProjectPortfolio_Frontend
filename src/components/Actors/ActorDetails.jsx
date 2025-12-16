@@ -5,6 +5,9 @@ import KnownForGrid from './KnownForGrid';
 import CoPlayersGrid from './CoPlayersGrid';
 import Pagination from '../Pagination/Pagination';
 import ProfessionList from './ProfessionListItem';
+import { handleBookmarkActors } from "../../utils/bookmarkActorsHelper";
+
+const FALLBACK_POSTER = 'https://loremfaces.net/96/id/1.jpg';
 
 function ActorDetails() {
   const { id } = useParams();
@@ -13,8 +16,15 @@ function ActorDetails() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [cpPage, setCpPage] = useState(1);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+
   const CP_PAGE_SIZE = 12;
 
+   const handleBookmark = () => {
+      const res = handleBookmarkActors(id, isBookmarked);
+  
+      setIsBookmarked(res ? !isBookmarked : isBookmarked);
+    }
   useEffect(() => {
     const load = async () => {
       setLoading(true);
@@ -149,7 +159,20 @@ function ActorDetails() {
               alt={fullName || actor.name}
               className="poster-img"
             />
+
+            <button
+                className="btn btn-dark w-100 rounded-pill fw-bold d-flex align-items-center justify-content-center py-2 mt-auto text-primary"
+                style={{ backgroundColor: '#2c2c2c', border: 'none', fontSize: '0.9rem', marginBottom: '10px' }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#3c3c3c'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = '#2c2c2c'}
+                onClick={handleBookmark}
+              >
+              {isBookmarked ? <i className="bi bi-check-lg me-2" /> : <i className="bi bi-plus-lg me-2" />}
+                Save Actor
+              </button>
           </aside>
+
+
 
           {/* Content right */}
           <main className="title-main">
