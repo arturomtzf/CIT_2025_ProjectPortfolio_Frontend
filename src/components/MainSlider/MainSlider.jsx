@@ -4,35 +4,9 @@ import UpNextItem from './UpNextItem';
 import { addSecondPoster, getPosterPicture } from '../../utils/picturesHelper';
 
 const API_URL = import.meta.env.VITE_API_URL;
-const MOCK_TRAILERS = [
-    {
-        "id": "tt10041958",
-        "title": "In Our Blood - El Legado, Jorge Lorenzo",
-        "runTimeInMinutes": 77,
-        "numVotes": 10,
-        "averageRating": 8.7,
-        "poster": "https://m.media-amazon.com/images/M/MV5BNGI4NDExNmUtYjdhNS00Nzc2LWFhMzItNGEwOWM2MzBkNGQ4XkEyXkFqcGdeQXVyOTA3MDkxNTQ@._V1_SX300.jpg"
-    },
-    {
-        "id": "tt33060407",
-        "title": "Marcella",
-        "runTimeInMinutes": 97,
-        "numVotes": 57,
-        "averageRating": 8.2,
-        "poster": "https://m.media-amazon.com/images/M/MV5BYzhkOWVjZGYtMmMzNS00MTAxLWE1ZjMtZDcxZTNiOTVmZDM3XkEyXkFqcGc@._V1_SX300.jpg"
-    },
-    {
-        "id": "tt36143683",
-        "title": "Piot",
-        "runTimeInMinutes": 72,
-        "numVotes": 21,
-        "averageRating": 9.0,
-        "poster": "https://m.media-amazon.com/images/M/MV5BMmFlZjAzMTktMmZmMS00ZDE4LTlkZjAtY2ZlNzQ0ZmU2NDZjXkEyXkFqcGc@._V1_SX300.jpg"
-    },
-];
 
 const MainSlider = () => {
-    const [randomMovies, setRandomMovies] = useState(MOCK_TRAILERS);
+    const [randomMovies, setRandomMovies] = useState();
     const [currentIndex, setCurrentIndex] = useState(0);
 
     const changeItem = (index) => {
@@ -72,9 +46,9 @@ const MainSlider = () => {
         getRandomMovies();
     }, []);
 
-    const currentMovie = randomMovies[currentIndex];
+    if (!randomMovies) return <div className="text-white p-5">Loading Content...</div>;
 
-    if (!currentMovie) return <div className="text-white p-5 text-center">Loading Content...</div>;
+    const currentMovie = randomMovies[currentIndex];
 
     return (
         <div className="container py-5" style={{ backgroundColor: '#000000' }}>
