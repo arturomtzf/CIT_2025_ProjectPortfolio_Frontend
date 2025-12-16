@@ -78,7 +78,7 @@ export const postSearchedTitle = async (titleId) => {
 
     try {
         const res = await fetch(url, options);
-        console.log(res);
+        // console.log(res);
 
         return res;
     } catch (err) {

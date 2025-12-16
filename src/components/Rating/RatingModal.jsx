@@ -63,7 +63,6 @@ const RatingModal = ({ show, handleClose, titleid, load }) => {
                 }
 
                 if (res.status === 204) {
-                    // No existing rating
                     setRating(0);
                     setComment("");
                     return;

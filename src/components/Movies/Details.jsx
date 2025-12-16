@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { useMoviePoster } from '../../hooks/useMoviePoster';
 import { getProfilePicture, getPosterPicture } from '../../utils/picturesHelper';
 import RatingModal from "../Rating/RatingModal";
+import { handleBookmarkMovies } from "../../utils/bookmarkHelper";
 
 function TitleDetails() {
   const { id } = useParams();
@@ -10,6 +11,7 @@ function TitleDetails() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [showRatingModal, setShowRatingModal] = useState(false);
+  const [isBookmarked, setIsBookmarked] = useState(false);
 
   const handleClose = () => setShowRatingModal(false);
   const handleShow = () => setShowRatingModal(true);
@@ -29,6 +31,12 @@ function TitleDetails() {
       setLoading(false);
     }
   };
+
+  const handleBookmark = () => {
+    const res = handleBookmarkMovies(id, isBookmarked);
+
+    setIsBookmarked(res ? !isBookmarked : isBookmarked);
+  }
 
   useEffect(() => {
     load();
@@ -227,9 +235,10 @@ function TitleDetails() {
                 style={{ backgroundColor: '#2c2c2c', border: 'none', fontSize: '0.9rem', marginBottom: '10px' }}
                 onMouseEnter={(e) => e.target.style.backgroundColor = '#3c3c3c'}
                 onMouseLeave={(e) => e.target.style.backgroundColor = '#2c2c2c'}
-                // onClick={handleBookmark}
+                onClick={handleBookmark}
               >
-                <i className="bi bi-plus-lg me-2"></i> Watchlist
+                {isBookmarked ? <i className="bi bi-check-lg me-2" /> : <i className="bi bi-plus-lg me-2" />}
+                Watchlist
               </button>
 
               {/* Rate button */}
@@ -281,9 +290,9 @@ function TitleDetails() {
       <RatingModal
         show={showRatingModal}
         handleClose={handleClose}
-        titleid={id} 
+        titleid={id}
         load={load}
-        />
+      />
     </div>
   );
 }
