@@ -94,7 +94,7 @@ export default function BookmarkActorsSection() {
 
                         <div className="d-flex flex-column mt-4" style={{ gap: "1.5rem" }}>
                             {actors.map((item) => {
-                                const name = `${item.firstname || ''} ${item.lastname || ''}`.trim()
+                                const name = `${item.firstName || ''} ${item.lastname || ''}`.trim()
                                 const poster = item.photo || FALLBACK_POSTER
 
                                 return (
