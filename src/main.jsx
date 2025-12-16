@@ -16,6 +16,7 @@ import Watchlist from './screens/Watchlist.jsx';
 import YourActivity from './screens/YourActivity.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import BookmarkedActors from './screens/BookmarkedActors.jsx';
+import YourRatings from './screens/YourRatings.jsx';
 
 const router = createBrowserRouter([
   { path: '/', element: <Home /> },
@@ -36,6 +37,12 @@ const router = createBrowserRouter([
     path: '/activity', element:
       (<ProtectedRoute>
         <YourActivity />
+      </ProtectedRoute>)
+  },
+  {
+    path: '/ratings', element:
+      (<ProtectedRoute>
+        <YourRatings />
       </ProtectedRoute>)
   },
   {path: '/bookmarked-actors', element: <BookmarkedActors />},
