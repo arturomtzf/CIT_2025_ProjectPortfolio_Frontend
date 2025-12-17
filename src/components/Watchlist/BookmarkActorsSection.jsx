@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import SidebarSection from "./SidebarSection";
 import { FALLBACK_POSTER } from '../../utils/constants';
+import { getProfilePicture } from '../../utils/picturesHelper';
 
 export default function BookmarkActorsSection() {
     const API_URL = import.meta.env.VITE_API_URL;
@@ -11,8 +12,12 @@ export default function BookmarkActorsSection() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
+    
     useEffect(() => {
+        
         const fetchBookmarkActors = async () => {
+            setLoading(true);
+            setError("");
             try {
                 const token = localStorage.getItem("token")
 
@@ -51,6 +56,39 @@ export default function BookmarkActorsSection() {
         fetchBookmarkActors();
     }, []);
 
+      const [profilePictures, setProfilePictures] = useState({});
+
+     useEffect(() => {
+        let mounted = true;
+
+        const fetchAllPictures = async () => {
+          if (!actors || actors.length === 0) return;
+        
+          const pics = {};
+        
+          await Promise.all(
+            actors.map(async actor => {
+              try {
+                const pic = await getProfilePicture(actor.personid);
+                pics[actor.personid] = pic
+                  ? `https://image.tmdb.org/t/p/w300_and_h450_face${pic}`
+                  : null;
+              } catch {
+                pics[actor.personid] = null;
+              }
+            })
+          );
+      
+          if (mounted) setProfilePictures(pics);
+        };
+    
+        fetchAllPictures();
+    
+        return () => { mounted = false; };
+        }, [actors]);
+
+    
+
     const handleRemove = async (personid) => {
         try {
             const token = localStorage.getItem("token")
@@ -65,7 +103,7 @@ export default function BookmarkActorsSection() {
                 }
             })
             if(!res.ok) {
-            alrert("Failed to delete an actor from the bookmarks")
+            alert("Failed to delete an actor from the bookmarks")
             return
             }
             setActors(prev => prev.filter(item => item.personid !== personid))
@@ -95,8 +133,7 @@ export default function BookmarkActorsSection() {
                         <div className="d-flex flex-column mt-4" style={{ gap: "1.5rem" }}>
                             {actors.map((item) => {
                                 const name = `${item.firstName || ''} ${item.lastname || ''}`.trim()
-                                const poster = item.photo || FALLBACK_POSTER
-
+                                const photo = profilePictures[item.personid] || item.photo || FALLBACK_POSTER;
                                 return (
                                     <div key={item.personid || ''}
                                     className="d-flex bg-white shadow-sm p-3 rounded-3 position-relative"
@@ -104,7 +141,7 @@ export default function BookmarkActorsSection() {
 
                                     
                                         <img
-                                          src={poster}
+                                          src={photo}
                                           className="item-img"
                                           alt={name}
                                           onError={(e) => (e.currentTarget.src = FALLBACK_POSTER)}
@@ -123,10 +160,8 @@ export default function BookmarkActorsSection() {
                                             </Link>
                                             </div>
                                                         
-                                        <div className="item-body">
                                           <h6 className="item-title">{name}</h6>
                                           
-                                        </div>
 
                                         <div style={{ display: "flex", alignItems: "center" }}>
                                             <img 
