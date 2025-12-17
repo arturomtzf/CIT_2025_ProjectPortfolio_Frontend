@@ -68,32 +68,22 @@ function ActorDetails() {
   const [coplayerPics, setCoplayerPics] = useState({});
 
   useEffect(() => {
-    let mounted = true;
-    const fetchPic = async () => {
+    const fetchProfilePic = async () => {
       if (!actor || !actor.personId) return;
       try {
         const pic = await getProfilePicture(actor.personId);
-        if (!mounted) return;
         setProfilePicture(pic ? `https://image.tmdb.org/t/p/w300_and_h450_face${pic}` : null);
       } catch (err) {
-        if (!mounted) return;
         console.warn('Failed to load profile picture', err);
         setProfilePicture(null);
       }
     };
-    fetchPic();
-    return () => { mounted = false; };
-  }, [actor && actor.personId]);
 
-  // Fetch co-player profile pictures in bulk and store keyed by personId
-  useEffect(() => {
-    let mounted = true;
-    if (!coplayers || coplayers.length === 0) {
-      setCoplayerPics({});
-      return;
-    }
-
-    const fetchAll = async () => {
+    const fetchCoplayerPics = async () => {
+      if (!coplayers || coplayers.length === 0) {
+        setCoplayerPics({});
+        return;
+      }
       try {
         const promises = coplayers.map(async (cp) => {
           const pid = cp?.personId;
@@ -105,29 +95,22 @@ function ActorDetails() {
             return [pid, null];
           }
         });
-
         const entries = await Promise.all(promises);
-        if (!mounted) return;
         const map = {};
         for (const [k, v] of entries) {
           if (k) map[k] = v;
         }
         setCoplayerPics(map);
       } catch (err) {
-        if (!mounted) return;
         console.warn('Failed to fetch coplayer pictures', err);
         setCoplayerPics({});
       }
     };
 
-    fetchAll();
-    return () => { mounted = false; };
-  }, [coplayers]);
-
-  // reset co-player page when the coplayers list changes
-  useEffect(() => {
+    fetchProfilePic();
+    fetchCoplayerPics();
     setCpPage(1);
-  }, [coplayers]);
+  }, [actor?.personId, coplayers]);
 
   if (loading) return (
     <>

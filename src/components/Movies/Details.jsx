@@ -15,9 +15,6 @@ function TitleDetails() {
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
 
-  const handleClose = () => setShowRatingModal(false);
-  const handleShow = () => setShowRatingModal(true);
-
   const load = async () => {
     setLoading(true);
     setError("");
@@ -36,30 +33,28 @@ function TitleDetails() {
 
   const handleBookmark = () => {
     const res = handleBookmarkMovies(id, isBookmarked);
-
-    setIsBookmarked(res ? !isBookmarked : isBookmarked);
-  }
+    if (res) setIsBookmarked(!isBookmarked);
+  };
 
   useEffect(() => {
     load();
   }, [id]);
 
-  // Hook to manage the main poster with guarded fallbacks. pass title fields (may be undefined during load)
+  // Hook to manage the main poster with guarded fallbacks.
   const [fetchedPoster2, setFetchedPoster2] = useState(null);
 
   useEffect(() => {
-    let mounted = true;
     const fetchPicture = async () => {
+      if (!title || !title.title) return;
       try {
-        const second = await getPosterPicture(title?.title || '');
-        if (!mounted) return;
+        const second = await getPosterPicture(title.title);
         if (second) setFetchedPoster2(`https://image.tmdb.org/t/p/w600_and_h900_face/${second}`);
       } catch (err) {
         // ignore
       }
     };
-    if (title && title.title) fetchPicture();
-    return () => { mounted = false; };
+
+    fetchPicture();
   }, [title?.title]);
 
   const { currentSrc: posterSrc, handleError: posterHandleError } = useMoviePoster(
@@ -108,32 +103,24 @@ function TitleDetails() {
 
             <aside className="poster-card">
               <img src={posterSrc} alt={title.title} className="poster-img" onError={posterHandleError} />
-              <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', padding:'10px'}}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px' }}>
                 <span className="badge">{title.rating != null ? `${title.rating.toFixed(1)} ★` : '—'}</span>
                 <span className="badge">{title.numberOfVotes != null ? `${title.numberOfVotes.toLocaleString()} votes` : 'No votes'}</span>
               </div>
-              
-              {/* Watchlist button */}
               <button
                 className="btn btn-dark w-100 rounded-pill fw-bold d-flex align-items-center justify-content-center py-2 mt-auto text-primary"
                 style={{ backgroundColor: '#2c2c2c', border: 'none', fontSize: '0.9rem', marginBottom: '10px' }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = '#3c3c3c'}
-                onMouseLeave={(e) => e.target.style.backgroundColor = '#2c2c2c'}
                 onClick={handleBookmark}
               >
                 {isBookmarked ? <i className="bi bi-check-lg me-2" /> : <i className="bi bi-plus-lg me-2" />}
                 Watchlist
               </button>
-
-              {/* Rate button */}
               <button
                 className="btn btn-dark w-100 rounded-pill fw-bold d-flex align-items-center justify-content-center py-2 mt-auto text-primary"
                 style={{ backgroundColor: '#2c2c2c', border: 'none', fontSize: '0.9rem' }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = '#3c3c3c'}
-                onMouseLeave={(e) => e.target.style.backgroundColor = '#2c2c2c'}
-                onClick={handleShow}
+                onClick={() => setShowRatingModal(true)}
               >
-                <i className="bi bi-star-fill me-2"></i> Rate
+                <i className="bi bi-star-fill me-2" /> Rate
               </button>
 
             </aside>
@@ -173,7 +160,7 @@ function TitleDetails() {
       </div>
       <RatingModal
         show={showRatingModal}
-        handleClose={handleClose}
+        handleClose={() => setShowRatingModal(false)}
         titleid={id}
         load={load}
       />
