@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useMoviePoster } from '../../hooks/useMoviePoster';
 import { getPosterPicture } from '../../utils/picturesHelper';
+import { getTitleById } from '../../utils/titlesService';
 import { GenreBadges, DirectorList, WriterList, StarsGrid } from './TitleDetailsItems';
 import { handleBookmarkMovies } from "../../utils/bookmarkHelper";
 import RatingModal from "../Rating/RatingModal";
@@ -19,9 +20,7 @@ function TitleDetails() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`/api/movies/${id}`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
+      const data = await getTitleById(id);
       setTitle(data);
     } catch (err) {
       console.error(err);

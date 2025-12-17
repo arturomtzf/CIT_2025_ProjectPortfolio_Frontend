@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getProfilePicture } from '../../utils/picturesHelper';
+import { getActorById, getCoPlayers } from '../../utils/actorsService';
 import KnownForGrid from './KnownForGrid';
 import CoPlayersGrid from './CoPlayersGrid';
 import Pagination from '../Pagination/Pagination';
@@ -30,9 +31,7 @@ function ActorDetails() {
       setLoading(true);
       setError("");
       try {
-        const res = await fetch(`/api/actors/${id}`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
+        const data = await getActorById(id);
         setActor(data);
 
         // Fetch co-players using the actor's name (firstname + lastname)
@@ -42,13 +41,8 @@ function ActorDetails() {
         
         if (actorName) {
           try {
-            const cpRes = await fetch(`/api/actors/${encodeURIComponent(actorName)}/coplayers`);
-            if (cpRes.ok) {
-              const cpData = await cpRes.json();
-              setCoplayers(Array.isArray(cpData) ? cpData : []);
-            } else {
-              console.warn(`Co-players endpoint returned ${cpRes.status} for name: ${actorName}`);
-            }
+            const cpData = await getCoPlayers(actorName);
+            setCoplayers(cpData);
           } catch (cpErr) {
             console.warn('Failed to load co-players:', cpErr);
           }
