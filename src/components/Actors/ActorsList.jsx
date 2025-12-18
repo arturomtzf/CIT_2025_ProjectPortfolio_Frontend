@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import Pagination from '../Pagination/Pagination';
 import { ActorListCard } from './ActorsListItems';
+import { getActors } from '../../utils/actorsService';
 
 function ActorsList() {
   const [items, setItems] = useState([]);
@@ -12,34 +13,22 @@ function ActorsList() {
   const ACTORS_PAGE_SIZE = 24;
 
   useEffect(() => {
-    const getItems = async () => {
+    const loadActors = async () => {
       setLoading(true);
       setError(null);
       try {
-        let res = await fetch(`/api/actors?pageSize=9999`);
-        if (!res.ok) throw new Error(`Failed to fetch actors, status ${res.status}`);
-        const data = await res.json();
-
-        let list = [];
-
-        if (Array.isArray(data)) {
-          list = data;
-        } else if (data) {
-          list = data.items || data.results || data.data || [];
-        }
-
+        const list = await getActors(9999);
         setItems(list || []);
-        // Calculate total pages based on all fetched items
         setTotalPages(Math.max(1, Math.ceil((list?.length || 0) / ACTORS_PAGE_SIZE)));
       } catch (err) {
-        console.error('Error fetching list:', err);
-        setError('Could not load list from API.');
+        console.error('Error fetching actors:', err);
+        setError('Could not load actors from API.');
       } finally {
         setLoading(false);
       }
     };
 
-    getItems();
+    loadActors();
   }, []);
 
   return (

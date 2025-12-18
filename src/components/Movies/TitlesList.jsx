@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import Pagination from '../Pagination/Pagination';
 import { ExploreGrid } from './TitlesListItems';
-const API_URL = import.meta.env.VITE_API_URL;
+import { getRandomMovies } from '../../utils/titlesService';
 
 function TitlesList() {
   const [movies, setMovies] = useState([]);
@@ -13,25 +13,12 @@ function TitlesList() {
   const EXPLORE_PAGE_SIZE = 24;
 
   useEffect(() => {
-    const getRandomMovies = async () => {
+    const loadMovies = async () => {
       setLoading(true);
       setError(null);
       try {
-
-        let res = await fetch(`/api/movies/random?pageSize=9999`);
-        if (!res.ok) throw new Error(`Failed to fetch random movies, status ${res.status}`);
-        const data = await res.json();
-
-        let items = [];
-
-        if (Array.isArray(data)) {
-          items = data;
-        } else if (data) {
-          items = data.items || data.results || data.data || data.movies || [];
-        }
-
+        const items = await getRandomMovies(9999);
         setMovies(items || []);
-        // Calculate total pages based on all fetched movies
         setTotalPages(Math.max(1, Math.ceil((items?.length || 0) / EXPLORE_PAGE_SIZE)));
       } catch (err) {
         console.error('Error fetching random movies:', err);
@@ -41,7 +28,7 @@ function TitlesList() {
       }
     };
 
-    getRandomMovies();
+    loadMovies();
   }, []);
 
   return (

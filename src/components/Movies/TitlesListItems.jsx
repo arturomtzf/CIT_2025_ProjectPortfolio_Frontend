@@ -39,7 +39,7 @@ export function MoviePoster({ movie, className = '', style = {}, alt }) {
 export function MovieCard({ m }) {
   const titleText = m?.title || 'Untitled';
   const rating = m?.averagerating ?? '';
-  const id = m?.titleid || titleText;
+  const id = m?.titleid || m?.id || m?._id || titleText;
   return (
     <Link key={id} to={`/title/${id}`} className="item-card">
       <MoviePoster movie={m} className="item-img w-100 rounded-1" style={{ cursor: 'pointer' }} alt={titleText} />
@@ -64,7 +64,7 @@ export function ExploreGrid({ items = [] }) {
     <>
       <div className="items-grid">
         {items.map((it) => (
-          <MovieCard key={it?.id || it?._id || it?.movieId || (it?.title || it?.Title)} m={it} />
+          <MovieCard key={it?.titleid || it?.id || it?._id} m={it} />
         ))}
       </div>
     </>

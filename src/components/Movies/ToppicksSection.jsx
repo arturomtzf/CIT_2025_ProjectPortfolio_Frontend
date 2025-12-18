@@ -3,8 +3,7 @@ import { Link } from 'react-router-dom';
 import Pagination from '../Pagination/Pagination';
 import { useMoviePoster } from '../../hooks/useMoviePoster';
 import { getPosterPicture } from '../../utils/picturesHelper';
-
-const API_URL = import.meta.env.VITE_API_URL;
+import { getPopularMovies } from '../../utils/titlesService';
 
 export default function ToppicksSection({ title = 'Top Picks', pageSize = 8 }) {
     const [popular, setPopular] = useState([]);
@@ -13,14 +12,10 @@ export default function ToppicksSection({ title = 'Top Picks', pageSize = 8 }) {
 
     useEffect(() => {
         let mounted = true;
-        const getPopular = async () => {
+        const loadPopular = async () => {
             setLoading(true);
             try {
-                const url = API_URL ? `${API_URL}/movies/popular?page=1&pageSize=100` : `/api/movies/popular?page=1&pageSize=100`;
-                const res = await fetch(url);
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                const data = await res.json();
-                const items = Array.isArray(data) ? data : (data && (data.items || data.results || data.movies || data.data)) || [];
+                const items = await getPopularMovies(1, 100);
                 if (!mounted) return;
                 setPopular(items);
             } catch (err) {
@@ -33,7 +28,7 @@ export default function ToppicksSection({ title = 'Top Picks', pageSize = 8 }) {
             }
         };
 
-        getPopular();
+        loadPopular();
         return () => { mounted = false; };
     }, []);
 
